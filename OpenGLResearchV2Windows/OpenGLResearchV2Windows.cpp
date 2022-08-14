@@ -1,180 +1,230 @@
 // OpenGLResearchV2Windows.cpp : Defines the entry point for the application.
 //
 
+#include <GL/glew.h>
 #include "framework.h"
 #include "OpenGLResearchV2Windows.h"
+#include <GLFW/glfw3.h>
+#include <platform_dependent/windows/utils.h>
+#include <platform_dependent/windows/windows_app.h>
+#include <platform_dependent/windows/windows_logger.h>
+#include <game_engine/console.h>
 
-#define MAX_LOADSTRING 100
+using namespace GameEngine;
+using namespace Windows::Utils;
+using namespace std;
 
-// Global Variables:
-HINSTANCE hInst;                                // current instance
-WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
-WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+#define CONSOLE_BUFFER_SIZE 1024
+#define WINDOW_WIDTH 1440
+#define WINDOW_HEIGHT 900
 
-// Forward declarations of functions included in this code module:
-ATOM                MyRegisterClass(HINSTANCE hInstance);
-BOOL                InitInstance(HINSTANCE, int);
-LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+static shared_ptr<WindowsApp> g_app;
+static shared_ptr<Console> g_console;
+
+static bool setupConsolse(HINSTANCE hInstance) {
+    if (!createNewConsole(CONSOLE_BUFFER_SIZE)) {
+        showDialog(
+            getString(hInstance, IDS_GENERIC_ERROR_TITLE).get(),
+            getString(hInstance, IDS_ERROR_OPENING_CONSOLE).get()
+        );
+        return false;
+    }
+
+    return true;
+}
+
+static GLFWwindow* initOpenGL(HINSTANCE hInstance) {
+    GLFWwindow* window;
+
+    /* Initialize the library */
+    if (!glfwInit()) {
+        showDialog(
+            getString(hInstance, IDS_GENERIC_ERROR_TITLE).get(),
+            getString(hInstance, IDS_ERROR_INITIALIZING_GLFW).get()
+        );
+        return nullptr;
+    }
+
+    /* Create a windowed mode window and its OpenGL context */
+    window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Game Engine", NULL, NULL);
+    if (!window) {
+        showDialog(
+            getString(hInstance, IDS_GENERIC_ERROR_TITLE).get(),
+            getString(hInstance, IDS_ERROR_CREATING_MAIN_WINDOW).get()
+        );
+
+        glfwTerminate();
+        return nullptr;
+    }
+
+    /* Make the window's context current */
+    glfwMakeContextCurrent(window);
+
+    if (glewInit() != GLEW_OK) {
+        showDialog(
+            getString(hInstance, IDS_GENERIC_ERROR_TITLE).get(),
+            getString(hInstance, IDS_ERROR_INITIALIZING_GLEW).get()
+        );
+        return nullptr;
+    }
+
+    return window;
+}
+
+static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    switch (key)
+    {
+    case GLFW_KEY_A:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 'a';
+            g_console->processCharacter(Console::Character::letter_a);
+        }
+        break;
+
+    case GLFW_KEY_Q:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 'q';
+            g_console->processCharacter(Console::Character::letter_q);
+        }
+        break;
+
+    case GLFW_KEY_BACKSPACE:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << "\b \b";
+            g_console->processCharacter(Console::Character::backspace);
+        }
+        break;
+
+    case GLFW_KEY_ENTER:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << '\n';
+            g_console->processCharacter(Console::Character::enter);
+        }
+        break;
+
+    default:
+        break;
+    }
+    /*switch (key) {
+    case GLFW_KEY_ESCAPE:
+        if (action == GLFW_PRESS) {
+            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_ESC, true);
+        }
+        else if (action == GLFW_RELEASE) {
+            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_ESC, false);
+        }
+        break;
+
+    case GLFW_KEY_W:
+        if (action == GLFW_PRESS) {
+            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_W, true);
+        }
+        else if (action == GLFW_RELEASE) {
+            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_W, false);
+        }
+        break;
+
+    case GLFW_KEY_S:
+        if (action == GLFW_PRESS) {
+            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_S, true);
+        }
+        else if (action == GLFW_RELEASE) {
+            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_S, false);
+        }
+        break;
+
+    case GLFW_KEY_A:
+        if (action == GLFW_PRESS) {
+            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_A, true);
+        }
+        else if (action == GLFW_RELEASE) {
+            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_A, false);
+        }
+        break;
+
+    case GLFW_KEY_D:
+        if (action == GLFW_PRESS) {
+            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_D, true);
+        }
+        else if (action == GLFW_RELEASE) {
+            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_D, false);
+        }
+        break;
+    }*/
+}
+
+static void initInput(GLFWwindow* window) {
+    glfwSetKeyCallback(window, keyCallback);
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+static void mainLoop(GLFWwindow* window) {
+    /* Loop until the user closes the window */
+    while (!glfwWindowShouldClose(window)) {
+        /* Game logic */
+        /*g_mouseInput->update();
+        auto activeScene = g_sceneManager->activeScene();
+        if (activeScene != nullptr) {
+            activeScene->update();
+            g_renderingEngine->render(*activeScene);
+        }*/
+
+        /* Render here */
+        /*glClear(GL_COLOR_BUFFER_BIT);
+
+        glBegin(GL_TRIANGLES);
+        glVertex2f(-0.5f, -0.5f);
+        glVertex2f(0.0f, 0.5f);
+        glVertex2f(0.5f, -0.5f);
+        glEnd();*/
+
+        /* Swap front and back buffers */
+        glfwSwapBuffers(window);
+
+        /* Poll for and process events */
+        glfwPollEvents();
+
+        /*if (g_app->isExitRequested()) {
+            glfwDestroyWindow(window);
+        }*/
+    }
+}
+
+static void initGame() {
+    L::setLogger(make_shared<WindowsLogger>());
+
+    //auto serviceLocator = make_shared<ServiceLocator>();
+
+    g_app = make_shared<WindowsApp>();
+    g_console = make_shared<Console>();
+
+    g_console->setCommandLineCallback([](string commandLine) {
+        cout << commandLine << endl;
+    });
+}
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
-    UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
-
-    // TODO: Place code here.
-
-    // Initialize global strings
-    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
-    LoadStringW(hInstance, IDC_OPENGLRESEARCHV2WINDOWS, szWindowClass, MAX_LOADSTRING);
-    MyRegisterClass(hInstance);
-
-    // Perform application initialization:
-    if (!InitInstance (hInstance, nCmdShow))
-    {
-        return FALSE;
+    if (!setupConsolse(hInstance)) {
+        return EXIT_FAILURE;
     }
 
-    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_OPENGLRESEARCHV2WINDOWS));
-
-    MSG msg;
-
-    // Main message loop:
-    while (GetMessage(&msg, nullptr, 0, 0))
-    {
-        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
-        {
-            TranslateMessage(&msg);
-            DispatchMessage(&msg);
-        }
+    GLFWwindow* window = initOpenGL(hInstance);
+    if (window == NULL) {
+        return EXIT_FAILURE;
     }
+    initInput(window);
 
-    return (int) msg.wParam;
-}
+    initGame();
 
+    mainLoop(window);
 
+    glfwTerminate();
 
-//
-//  FUNCTION: MyRegisterClass()
-//
-//  PURPOSE: Registers the window class.
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
-{
-    WNDCLASSEXW wcex;
-
-    wcex.cbSize = sizeof(WNDCLASSEX);
-
-    wcex.style          = CS_HREDRAW | CS_VREDRAW;
-    wcex.lpfnWndProc    = WndProc;
-    wcex.cbClsExtra     = 0;
-    wcex.cbWndExtra     = 0;
-    wcex.hInstance      = hInstance;
-    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_OPENGLRESEARCHV2WINDOWS));
-    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
-    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_OPENGLRESEARCHV2WINDOWS);
-    wcex.lpszClassName  = szWindowClass;
-    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-
-    return RegisterClassExW(&wcex);
-}
-
-//
-//   FUNCTION: InitInstance(HINSTANCE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
-   hInst = hInstance; // Store instance handle in our global variable
-
-   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
-      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
-
-   if (!hWnd)
-   {
-      return FALSE;
-   }
-
-   ShowWindow(hWnd, nCmdShow);
-   UpdateWindow(hWnd);
-
-   return TRUE;
-}
-
-//
-//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
-//
-//  PURPOSE: Processes messages for the main window.
-//
-//  WM_COMMAND  - process the application menu
-//  WM_PAINT    - Paint the main window
-//  WM_DESTROY  - post a quit message and return
-//
-//
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    switch (message)
-    {
-    case WM_COMMAND:
-        {
-            int wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId)
-            {
-            case IDM_ABOUT:
-                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-                break;
-            case IDM_EXIT:
-                DestroyWindow(hWnd);
-                break;
-            default:
-                return DefWindowProc(hWnd, message, wParam, lParam);
-            }
-        }
-        break;
-    case WM_PAINT:
-        {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(hWnd, &ps);
-            // TODO: Add any drawing code that uses hdc here...
-            EndPaint(hWnd, &ps);
-        }
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hWnd, message, wParam, lParam);
-    }
-    return 0;
-}
-
-// Message handler for about box.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-    UNREFERENCED_PARAMETER(lParam);
-    switch (message)
-    {
-    case WM_INITDIALOG:
-        return (INT_PTR)TRUE;
-
-    case WM_COMMAND:
-        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-        {
-            EndDialog(hDlg, LOWORD(wParam));
-            return (INT_PTR)TRUE;
-        }
-        break;
-    }
-    return (INT_PTR)FALSE;
+    return EXIT_SUCCESS;
 }
