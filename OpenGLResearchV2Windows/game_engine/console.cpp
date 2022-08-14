@@ -21,7 +21,7 @@ void Console::processCharacter(Character character)
 
     case Character::enter:
         if (m_commandLineCallback != nullptr) {
-            m_commandLineCallback(string(m_buffer.data()));
+            m_commandLineCallback(string(m_buffer.data(), 0, m_buffer.size()));
             m_buffer.clear();
         }
         break;
