@@ -17,7 +17,7 @@ public:
         exclamation_mark, tilde, at, dollar, percent, caret, ampersand, asterisc, left_parenthesis, right_parenthesis,
         minus, underscore, plus, left_brace, right_brace, left_bracket, right_bracket, left_chevron,
         colon, semicolon, double_quote, quote, backslash, slash, vertical_bar, question_mark,
-        number_sign, equals_sign, space, backspace, enter
+        number_sign, equals_sign, space, backspace, enter, period, comma
     };
 
     void setCommandLineCallback(std::function<void(std::string)> callback) { m_commandLineCallback = callback; }

@@ -21,6 +21,9 @@ using namespace std;
 
 static shared_ptr<WindowsApp> g_app;
 static shared_ptr<Console> g_console;
+static duk_context* g_duktapeContext;
+
+static bool g_isShiftPressed = false;
 
 static bool setupConsolse(HINSTANCE hInstance) {
     if (!createNewConsole(CONSOLE_BUFFER_SIZE)) {
@@ -83,10 +86,139 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
         }
         break;
 
+    case GLFW_KEY_E:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 'e';
+            g_console->processCharacter(Console::Character::letter_e);
+        }
+        break;
+
+    case GLFW_KEY_I:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 'i';
+            g_console->processCharacter(Console::Character::letter_i);
+        }
+        break;
+
+    case GLFW_KEY_L:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 'l';
+            g_console->processCharacter(Console::Character::letter_l);
+        }
+        break;
+
+    case GLFW_KEY_N:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 'n';
+            g_console->processCharacter(Console::Character::letter_n);
+        }
+        break;
+
+    case GLFW_KEY_P:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 'p';
+            g_console->processCharacter(Console::Character::letter_p);
+        }
+        break;
+
     case GLFW_KEY_Q:
         if (action == GLFW_PRESS || action == GLFW_REPEAT) {
             cout << 'q';
             g_console->processCharacter(Console::Character::letter_q);
+        }
+        break;
+
+    case GLFW_KEY_R:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 'r';
+            g_console->processCharacter(Console::Character::letter_r);
+        }
+        break;
+
+    case GLFW_KEY_S:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 's';
+            g_console->processCharacter(Console::Character::letter_s);
+        }
+        break;
+
+    case GLFW_KEY_T:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 't';
+            g_console->processCharacter(Console::Character::letter_t);
+        }
+        break;
+
+    case GLFW_KEY_U:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 'u';
+            g_console->processCharacter(Console::Character::letter_u);
+        }
+        break;
+
+    case GLFW_KEY_X:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << 'x';
+            g_console->processCharacter(Console::Character::letter_x);
+        }
+        break;
+
+    case GLFW_KEY_PERIOD:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << '.';
+            g_console->processCharacter(Console::Character::period);
+        }
+        break;
+
+    case GLFW_KEY_SEMICOLON:
+        if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+            cout << ';';
+            g_console->processCharacter(Console::Character::semicolon);
+        }
+        break;
+
+    case GLFW_KEY_MINUS:
+        if (g_isShiftPressed) {
+            if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+                cout << '_';
+                g_console->processCharacter(Console::Character::underscore);
+            }
+        }
+        else {
+            if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+                cout << '-';
+                g_console->processCharacter(Console::Character::minus);
+            }
+        }
+        break;
+
+    case GLFW_KEY_9:
+        if (g_isShiftPressed) {
+            if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+                cout << '(';
+                g_console->processCharacter(Console::Character::left_parenthesis);
+            }
+        }
+        else {
+            if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+                cout << '9';
+                g_console->processCharacter(Console::Character::number_9);
+            }
+        }
+        break;
+
+    case GLFW_KEY_0:
+        if (g_isShiftPressed) {
+            if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+                cout << ')';
+                g_console->processCharacter(Console::Character::right_parenthesis);
+            }
+        }
+        else {
+            if (action == GLFW_PRESS || action == GLFW_REPEAT) {
+                cout << '0';
+                g_console->processCharacter(Console::Character::number_0);
+            }
         }
         break;
 
@@ -103,6 +235,15 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
             g_console->processCharacter(Console::Character::enter);
         }
         break;
+
+    case GLFW_KEY_LEFT_SHIFT:
+        if (action == GLFW_PRESS) {
+            g_isShiftPressed = true;
+        } else if (action == GLFW_RELEASE) {
+            g_isShiftPressed = false;
+        }
+        break;
+
 
     default:
         break;
@@ -187,9 +328,9 @@ static void mainLoop(GLFWwindow* window) {
         /* Poll for and process events */
         glfwPollEvents();
 
-        /*if (g_app->isExitRequested()) {
+        if (g_app->isExitRequested()) {
             glfwDestroyWindow(window);
-        }*/
+        }
     }
 }
 
@@ -202,13 +343,47 @@ static void initGame() {
     g_console = make_shared<Console>();
 
     g_console->setCommandLineCallback([](string commandLine) {
-        cout << commandLine << endl;
+        duk_push_string(g_duktapeContext, commandLine.c_str());
+        if (duk_peval(g_duktapeContext) != 0) {
+            cout << "Script error: " << duk_safe_to_string(g_duktapeContext, -1) << endl;
+        }
+        duk_pop(g_duktapeContext);
     });
+}
 
-    duk_context* ctx = duk_create_heap_default();
-    duk_eval_string(ctx, "1+2");
-    printf("1+2=%d\n", (int)duk_get_int(ctx, -1));
-    duk_destroy_heap(ctx);
+static duk_ret_t native_print(duk_context* ctx) {
+    printf("%s", duk_to_string(ctx, 0));
+    return 0;
+}
+
+static duk_ret_t native_println(duk_context* ctx) {
+    printf("%s\n", duk_to_string(ctx, 0));
+    return 0;
+}
+
+static duk_ret_t native_requestExit(duk_context* ctx) {
+    g_app->requestExit();
+
+    return 0;
+}
+
+static void setupScriptLanguage() {
+    g_duktapeContext = duk_create_heap_default();
+    
+    duk_push_c_function(g_duktapeContext, native_print, 1);
+    duk_put_global_string(g_duktapeContext, "print");
+    
+    duk_push_c_function(g_duktapeContext, native_println, 1);
+    duk_put_global_string(g_duktapeContext, "println");
+
+    {
+        duk_idx_t appObjectId;
+
+        appObjectId = duk_push_object(g_duktapeContext);
+        duk_push_c_function(g_duktapeContext, native_requestExit, 0);
+        duk_put_prop_string(g_duktapeContext, appObjectId, "exit");
+        duk_put_global_string(g_duktapeContext, "app");
+    }
 }
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -227,6 +402,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     initInput(window);
 
     initGame();
+
+    setupScriptLanguage();
 
     mainLoop(window);
 
