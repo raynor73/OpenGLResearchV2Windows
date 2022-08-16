@@ -158,18 +158,43 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="game_engine\app.h" />
     <ClInclude Include="game_engine\console.h" />
+    <ClInclude Include="game_engine\constants.h" />
     <ClInclude Include="game_engine\logger.h" />
     <ClInclude Include="game_engine\without_generated_methods.h" />
     <ClInclude Include="OpenGLResearchV2Windows.h" />
     <ClInclude Include="platform_dependent\windows\utils.h" />
     <ClInclude Include="platform_dependent\windows\windows_app.h" />
     <ClInclude Include="platform_dependent\windows\windows_logger.h" />
+    <ClInclude Include="rendering_engine\opengl_error_detector.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="third_party\duktape\duktape.h" />
     <ClInclude Include="third_party\duktape\duk_config.h" />
     <ClInclude Include="third_party\include\GLFW\glfw3.h" />
     <ClInclude Include="third_party\include\GLFW\glfw3native.h" />
+    <ClInclude Include="third_party\include\glm\common.hpp" />
+    <ClInclude Include="third_party\include\glm\exponential.hpp" />
+    <ClInclude Include="third_party\include\glm\ext.hpp" />
+    <ClInclude Include="third_party\include\glm\fwd.hpp" />
+    <ClInclude Include="third_party\include\glm\geometric.hpp" />
+    <ClInclude Include="third_party\include\glm\glm.hpp" />
+    <ClInclude Include="third_party\include\glm\integer.hpp" />
+    <ClInclude Include="third_party\include\glm\mat2x2.hpp" />
+    <ClInclude Include="third_party\include\glm\mat2x3.hpp" />
+    <ClInclude Include="third_party\include\glm\mat2x4.hpp" />
+    <ClInclude Include="third_party\include\glm\mat3x2.hpp" />
+    <ClInclude Include="third_party\include\glm\mat3x3.hpp" />
+    <ClInclude Include="third_party\include\glm\mat3x4.hpp" />
+    <ClInclude Include="third_party\include\glm\mat4x2.hpp" />
+    <ClInclude Include="third_party\include\glm\mat4x3.hpp" />
+    <ClInclude Include="third_party\include\glm\mat4x4.hpp" />
+    <ClInclude Include="third_party\include\glm\matrix.hpp" />
+    <ClInclude Include="third_party\include\glm\packing.hpp" />
+    <ClInclude Include="third_party\include\glm\trigonometric.hpp" />
+    <ClInclude Include="third_party\include\glm\vec2.hpp" />
+    <ClInclude Include="third_party\include\glm\vec3.hpp" />
+    <ClInclude Include="third_party\include\glm\vec4.hpp" />
+    <ClInclude Include="third_party\include\glm\vector_relational.hpp" />
     <ClInclude Include="third_party\include\GL\eglew.h" />
     <ClInclude Include="third_party\include\GL\glew.h" />
     <ClInclude Include="third_party\include\GL\glxew.h" />
@@ -182,6 +207,7 @@
     <ClCompile Include="platform_dependent\windows\utils.cpp" />
     <ClCompile Include="platform_dependent\windows\windows_app.cpp" />
     <ClCompile Include="platform_dependent\windows\windows_logger.cpp" />
+    <ClCompile Include="rendering_engine\opengl_error_detector.cpp" />
     <ClCompile Include="third_party\duktape\duktape.c" />
   </ItemGroup>
   <ItemGroup>
@@ -195,6 +221,9 @@
     <Library Include="third_party\libs\glew32s.lib" />
     <Library Include="third_party\libs\glfw3_mt.lib" />
     <Library Include="third_party\libs\OpenGL32.Lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="third_party\include\glm\CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

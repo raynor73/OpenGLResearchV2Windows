@@ -10,6 +10,8 @@
 #include <platform_dependent/windows/windows_logger.h>
 #include <game_engine/console.h>
 #include <duktape.h>
+#include <game_engine/constants.h>
+#include <rendering_engine/opengl_error_detector.h>
 
 using namespace GameEngine;
 using namespace Windows::Utils;
@@ -22,8 +24,10 @@ using namespace std;
 static shared_ptr<WindowsApp> g_app;
 static shared_ptr<Console> g_console;
 static duk_context* g_duktapeContext;
+static shared_ptr<OpenGLErrorDetector> g_openGLErrorDetector;
 
 static bool g_isShiftPressed = false;
+static bool g_isErrorLogged = false;
 
 static bool setupConsolse(HINSTANCE hInstance) {
     if (!createNewConsole(CONSOLE_BUFFER_SIZE)) {
@@ -314,6 +318,18 @@ static void mainLoop(GLFWwindow* window) {
         }*/
 
         /* Render here */
+        if (g_openGLErrorDetector->isOpenGLErrorDetected()) {
+            if (!g_isErrorLogged) {
+                g_isErrorLogged = true;
+                L::e(
+                    Constants::LOG_TAG,
+                    "Rendering stopped as OpenGL error has been detected"
+                );
+            }
+
+            return;
+        }
+
         /*glClear(GL_COLOR_BUFFER_BIT);
 
         glBegin(GL_TRIANGLES);
@@ -349,6 +365,8 @@ static void initGame() {
         }
         duk_pop(g_duktapeContext);
     });
+
+    g_openGLErrorDetector = make_shared<OpenGLErrorDetector>();
 }
 
 static duk_ret_t native_print(duk_context* ctx) {
