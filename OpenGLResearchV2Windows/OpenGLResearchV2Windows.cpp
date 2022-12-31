@@ -12,6 +12,8 @@
 #include <duktape.h>
 #include <game_engine/constants.h>
 #include <rendering_engine/opengl_error_detector.h>
+#include <rendering_engine/opengl_shaders_repository.h>
+#include "research/research_scene_001.h"
 
 using namespace GameEngine;
 using namespace Windows::Utils;
@@ -25,6 +27,7 @@ static shared_ptr<WindowsApp> g_app;
 static shared_ptr<Console> g_console;
 static duk_context* g_duktapeContext;
 static shared_ptr<OpenGLErrorDetector> g_openGLErrorDetector;
+static shared_ptr<OpenGLShadersRepository> g_openGLShadersRepository;
 
 static bool g_isShiftPressed = false;
 static bool g_isErrorLogged = false;
@@ -54,6 +57,11 @@ static GLFWwindow* initOpenGL(HINSTANCE hInstance) {
     }
 
     /* Create a windowed mode window and its OpenGL context */
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Game Engine", NULL, NULL);
     if (!window) {
         showDialog(
@@ -307,6 +315,9 @@ static void initInput(GLFWwindow* window) {
 }
 
 static void mainLoop(GLFWwindow* window) {
+    auto scene = make_shared<ResearchScene001>(g_openGLErrorDetector, g_openGLShadersRepository);
+    scene->start();
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
         /* Game logic */
@@ -326,17 +337,17 @@ static void mainLoop(GLFWwindow* window) {
                     "Rendering stopped as OpenGL error has been detected"
                 );
             }
+        } else {
+            scene->update();
 
-            return;
+            /*glClear(GL_COLOR_BUFFER_BIT);
+
+            glBegin(GL_TRIANGLES);
+            glVertex2f(-0.5f, -0.5f);
+            glVertex2f(0.0f, 0.5f);
+            glVertex2f(0.5f, -0.5f);
+            glEnd();*/
         }
-
-        /*glClear(GL_COLOR_BUFFER_BIT);
-
-        glBegin(GL_TRIANGLES);
-        glVertex2f(-0.5f, -0.5f);
-        glVertex2f(0.0f, 0.5f);
-        glVertex2f(0.5f, -0.5f);
-        glEnd();*/
 
         /* Swap front and back buffers */
         glfwSwapBuffers(window);
@@ -367,6 +378,7 @@ static void initGame() {
     });
 
     g_openGLErrorDetector = make_shared<OpenGLErrorDetector>();
+    g_openGLShadersRepository = make_shared<OpenGLShadersRepository>(g_openGLErrorDetector);
 }
 
 static duk_ret_t native_print(duk_context* ctx) {
