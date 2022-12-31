@@ -14,6 +14,7 @@
 #include <rendering_engine/opengl_error_detector.h>
 #include <rendering_engine/opengl_shaders_repository.h>
 #include "research/research_scene_001.h"
+#include "research/research_scene_002.h"
 
 using namespace GameEngine;
 using namespace Windows::Utils;
@@ -315,7 +316,7 @@ static void initInput(GLFWwindow* window) {
 }
 
 static void mainLoop(GLFWwindow* window) {
-    auto scene = make_shared<ResearchScene001>(g_openGLErrorDetector, g_openGLShadersRepository);
+    auto scene = make_shared<ResearchScene002>(g_openGLErrorDetector, g_openGLShadersRepository);
     scene->start();
 
     /* Loop until the user closes the window */

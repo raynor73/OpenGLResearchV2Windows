@@ -162,6 +162,9 @@
     <ClInclude Include="rendering_engine\utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="research\research_scene_002.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OpenGLResearchV2Windows.cpp">
@@ -195,6 +198,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="research\research_scene_001.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="research\research_scene_002.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
