@@ -33,6 +33,10 @@ void main() {
 
 void ResearchScene002::start()
 {
+    GLuint vao;
+    glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao);
+
     GLfloat vertices[] = {
         0.5, -0.5, 0.0,
         1.0, 0.0, 0.0,
@@ -48,16 +52,20 @@ void ResearchScene002::start()
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+    GLushort indices[] = {
+        0, 1, 2
+    };
+    GLuint indexBuffer;
+    glGenBuffers(1, &indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     m_shadersRepository->createVertexShader("vertexShader", g_vertexShaderSource);
     m_shadersRepository->createFragmentShader("fragmentShader", g_fragmentShaderSource);
     m_shadersRepository->createShaderProgram("shaderProgram", "vertexShader", "fragmentShader");
 
     auto shaderProgram = m_shadersRepository->getShaderProgramContainer("shaderProgram").shaderProgram();
     glUseProgram(shaderProgram);
-
-    GLuint vao;
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, BUFFER_OFFSET(0));
     glEnableVertexAttribArray(0);
@@ -71,7 +79,10 @@ void ResearchScene002::start()
 void ResearchScene002::update()
 {
     glClear(GL_COLOR_BUFFER_BIT);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    //glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
+
     glFlush();
 
     m_openGLErrorDetector->checkOpenGLErrors("ResearchScene002::update");
