@@ -83,7 +83,13 @@ static GLFWwindow* initOpenGL(HINSTANCE hInstance) {
             getString(hInstance, IDS_ERROR_INITIALIZING_GLEW).get()
         );
         return nullptr;
+    
     }
+
+    /*std::cout << glGetString(GL_VERSION) << std::endl;
+    GLint profile;
+    glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profile);
+    std::cout << ((profile & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT) != 0) << std::endl;*/
 
     return window;
 }
@@ -257,56 +263,15 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
         }
         break;
 
+    case GLFW_KEY_ESCAPE:
+        if (action == GLFW_PRESS) {
+            g_app->requestExit();
+        }
+        break;
 
     default:
         break;
     }
-    /*switch (key) {
-    case GLFW_KEY_ESCAPE:
-        if (action == GLFW_PRESS) {
-            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_ESC, true);
-        }
-        else if (action == GLFW_RELEASE) {
-            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_ESC, false);
-        }
-        break;
-
-    case GLFW_KEY_W:
-        if (action == GLFW_PRESS) {
-            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_W, true);
-        }
-        else if (action == GLFW_RELEASE) {
-            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_W, false);
-        }
-        break;
-
-    case GLFW_KEY_S:
-        if (action == GLFW_PRESS) {
-            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_S, true);
-        }
-        else if (action == GLFW_RELEASE) {
-            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_S, false);
-        }
-        break;
-
-    case GLFW_KEY_A:
-        if (action == GLFW_PRESS) {
-            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_A, true);
-        }
-        else if (action == GLFW_RELEASE) {
-            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_A, false);
-        }
-        break;
-
-    case GLFW_KEY_D:
-        if (action == GLFW_PRESS) {
-            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_D, true);
-        }
-        else if (action == GLFW_RELEASE) {
-            g_keyboardInput->setKeyPressed(KeyboardInput::KEY_D, false);
-        }
-        break;
-    }*/
 }
 
 static void initInput(GLFWwindow* window) {
