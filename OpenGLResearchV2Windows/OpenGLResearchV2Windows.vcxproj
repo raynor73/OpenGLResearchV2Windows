@@ -157,9 +157,12 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="game_engine\app.h" />
+    <ClInclude Include="game_engine\bitmap_info.h" />
+    <ClInclude Include="game_engine\bitmap_loader.h" />
     <ClInclude Include="game_engine\console.h" />
     <ClInclude Include="game_engine\constants.h" />
     <ClInclude Include="game_engine\logger.h" />
+    <ClInclude Include="game_engine\utils.h" />
     <ClInclude Include="game_engine\without_generated_methods.h" />
     <ClInclude Include="OpenGLResearchV2Windows.h" />
     <ClInclude Include="platform_dependent\windows\utils.h" />
@@ -209,8 +212,11 @@
   <ItemGroup>
     <ClCompile Include="game_engine\console.cpp" />
     <ClCompile Include="game_engine\logger.cpp" />
+    <ClCompile Include="game_engine\utils.cpp" />
     <ClCompile Include="OpenGLResearchV2Windows.cpp" />
-    <ClCompile Include="platform_dependent\windows\utils.cpp" />
+    <ClCompile Include="platform_dependent\windows\utils.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(RelativeDir)</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="platform_dependent\windows\windows_app.cpp" />
     <ClCompile Include="platform_dependent\windows\windows_logger.cpp" />
     <ClCompile Include="rendering_engine\opengl_error_detector.cpp" />

@@ -2,6 +2,8 @@
 #include <rendering_engine/utils.h>
 #include <game_engine/logger.h>
 #include <sstream>
+#include <glm/ext/matrix_transform.hpp>
+#include <glm/ext.hpp>
 
 using namespace GameEngine;
 using namespace std;
@@ -12,10 +14,12 @@ static const char* g_vertexShaderSource = R"(
 layout(location = 0) in vec3 positionAttribute;
 layout(location = 1) in vec3 colorAttribute;
 
+uniform mat4 mvpMatrixUniform;
+
 out vec3 interpolatedVertexColor;
 
 void main() {
-    gl_Position = vec4(positionAttribute, 1);
+    gl_Position = mvpMatrixUniform * vec4(positionAttribute, 1);
     interpolatedVertexColor = colorAttribute;
 }
 )";
@@ -33,11 +37,14 @@ void main() {
 
 void ResearchScene002::start()
 {
+    m_cameraPosition = { 0, 0, 1 };
+    m_cameraLookAt = { 0, 0, 0 };
+
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    GLfloat vertices[] = {
+    /*GLfloat vertices[] = {
         0.5, -0.5, 0.0,
         1.0, 0.0, 0.0,
 
@@ -45,6 +52,16 @@ void ResearchScene002::start()
         0.0, 1.0, 0.0,
 
         -0.5, -0.5, 0.0,
+        0.0, 0.0, 1.0
+    };*/
+    GLfloat vertices[] = {
+        20, 10, 0.0,
+        1.0, 0.0, 0.0,
+
+        15, 20, 0.0,
+        0.0, 1.0, 0.0,
+
+        10, 10, 0.0,
         0.0, 0.0, 1.0
     };
     GLuint vertexBuffer;
@@ -74,13 +91,23 @@ void ResearchScene002::start()
     glEnableVertexAttribArray(1);
 
     m_openGLErrorDetector->checkOpenGLErrors("ResearchScene002::start");
+
+    GLfloat viewport[4];
+    glGetFloatv(GL_VIEWPORT, viewport);
+    m_projection = glm::ortho<float>(0, viewport[2], 0, viewport[3], 0.1f, 100.0f);
 }
 
 void ResearchScene002::update()
 {
+    auto modelMatrix = glm::identity<glm::mat4>();
+    auto viewMatrix = glm::lookAt(m_cameraPosition, m_cameraLookAt, m_up);
+
+    auto mvpMatrix = m_projection * viewMatrix * modelMatrix;
+    auto mvpMatrixUniform = m_shadersRepository->getShaderProgramContainer("shaderProgram").mvpMatrixUniform();
+    glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, &mvpMatrix[0][0]);
+
     glClear(GL_COLOR_BUFFER_BIT);
 
-    //glDrawArrays(GL_TRIANGLES, 0, 3);
     glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
 
     glFlush();

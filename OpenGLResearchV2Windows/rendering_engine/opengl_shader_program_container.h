@@ -16,10 +16,10 @@ class OpenGLShaderProgramContainer
     GLint m_normalAttribute;
     GLint m_uvAttribute;
     GLint m_jointIndicesAttribute;
-    GLint m_jointWeightsAttribute;
+    GLint m_jointWeightsAttribute;*/
 
     GLint m_mvpMatrixUniform;
-    GLint m_modelMatrixUniform;
+    /*GLint m_modelMatrixUniform;
     GLint m_mvMatrixUniform;
     GLint m_textureUniform;
     GLint m_diffuseColorUniform;
@@ -47,10 +47,10 @@ public:
     GLint uvAttribute() const { return m_uvAttribute; }
 
     GLint jointIndicesAttribute() const { return m_jointIndicesAttribute; }
-    GLint jointWeightsAttribute() const { return m_jointWeightsAttribute; }
+    GLint jointWeightsAttribute() const { return m_jointWeightsAttribute; }*/
 
     GLint mvpMatrixUniform() const { return m_mvpMatrixUniform; }
-    GLint modelMatrixUniform() const { return m_modelMatrixUniform; }
+    /*GLint modelMatrixUniform() const { return m_modelMatrixUniform; }
     GLint mvMatrixUniform() const { return m_mvMatrixUniform; }
     GLint textureUniform() const { return m_textureUniform; }
     GLint diffuseColorUniform() const { return m_diffuseColorUniform; }

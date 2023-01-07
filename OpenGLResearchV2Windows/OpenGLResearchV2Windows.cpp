@@ -15,8 +15,11 @@
 #include <rendering_engine/opengl_shaders_repository.h>
 #include "research/research_scene_001.h"
 #include "research/research_scene_002.h"
+#include <sstream>
+#include <game_engine/utils.h>
 
 using namespace GameEngine;
+using namespace GameEngine::Utils;
 using namespace Windows::Utils;
 using namespace std;
 
@@ -85,11 +88,6 @@ static GLFWwindow* initOpenGL(HINSTANCE hInstance) {
         return nullptr;
     
     }
-
-    /*std::cout << glGetString(GL_VERSION) << std::endl;
-    GLint profile;
-    glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profile);
-    std::cout << ((profile & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT) != 0) << std::endl;*/
 
     return window;
 }
@@ -280,7 +278,45 @@ static void initInput(GLFWwindow* window) {
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
+static void printOpenGLInfo() {
+    stringstream ss;
+    GLint intValue;
+
+    glGetIntegerv(GL_NUM_EXTENSIONS, &intValue);
+    for (int i = 0; i < intValue; i++) {
+        ss << "GL_EXTENSIONS[" << i << "]: " << reinterpret_cast<const char*>(glGetStringi(GL_EXTENSIONS, i));
+        L::d("OpenGL", ss.str());
+        ss.str("");
+        ss.clear();
+    }
+
+    logGLString("OpenGL", "GL_VENDOR", GL_VENDOR);
+    logGLString("OpenGL", "GL_RENDERER", GL_RENDERER);
+    logGLString("OpenGL", "GL_VERSION", GL_VERSION);
+    logGLString("OpenGL", "GL_SHADING_LANGUAGE_VERSION", GL_SHADING_LANGUAGE_VERSION);
+
+    logGLInteger("OpenGL", "GL_MAJOR_VERSION", GL_MAJOR_VERSION);
+    logGLInteger("OpenGL", "GL_MINOR_VERSION", GL_MINOR_VERSION);
+    logGLInteger64("OpenGL", "GL_MAX_SERVER_WAIT_TIMEOUT", GL_MAX_SERVER_WAIT_TIMEOUT);
+
+    logGLInteger("OpenGL", "GL_MAX_VERTEX_ATTRIBS", GL_MAX_VERTEX_ATTRIBS);
+
+    /*GLint profile;
+    glGetIntegerv(GL_CONTEXT_PROFILE_MASK, &profile);
+    std::cout << ((profile & GL_CONTEXT_COMPATIBILITY_PROFILE_BIT) != 0) << std::endl;*/
+
+    logGLInteger("OpenGL", "GL_SAMPLE_BUFFERS", GL_SAMPLE_BUFFERS);
+    if (glGetInteger(GL_SAMPLE_BUFFERS)) {
+        logGLInteger("OpenGL", "GL_SAMPLES", GL_SAMPLES);
+    }
+
+    logGLInteger("OpenGL", "GL_MAX_RENDERBUFFER_SIZE", GL_MAX_RENDERBUFFER_SIZE);
+    logGLInteger("OpenGL", "GL_MAX_COLOR_ATTACHMENTS", GL_MAX_COLOR_ATTACHMENTS);
+}
+
 static void mainLoop(GLFWwindow* window) {
+    printOpenGLInfo();
+
     auto scene = make_shared<ResearchScene002>(g_openGLErrorDetector, g_openGLShadersRepository);
     scene->start();
 
