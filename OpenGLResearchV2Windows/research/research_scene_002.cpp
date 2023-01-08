@@ -4,9 +4,11 @@
 #include <sstream>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/ext.hpp>
+#include <game_engine/utils.h>
 
 using namespace GameEngine;
 using namespace std;
+using namespace Utils;
 
 static const char* g_vertexShaderSource = R"(
 #version 400 core
@@ -115,7 +117,35 @@ void ResearchScene002::update()
     if (!m_isSaved) {
         m_isSaved = true;
 
+        BitmapInfo bitmapInfo;
+        GLint viewportSize[4];
+        glGetIntegerv(GL_VIEWPORT, viewportSize);
+        bitmapInfo.width = viewportSize[2];
+        bitmapInfo.height = viewportSize[3];
+        bitmapInfo.data.resize(bitmapInfo.width * bitmapInfo.height * 4);
+        auto drawFramebufferName = glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
 
+        stringstream ss;
+        ss << "drawFramebufferName: " << drawFramebufferName;
+        L::d("!@#", ss.str());
+        
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, drawFramebufferName);
+        glReadPixels(0, 0, bitmapInfo.width, bitmapInfo.height, GL_RGBA, GL_UNSIGNED_BYTE, bitmapInfo.data.data());
+        m_bitmapDataSource->saveBitmap(bitmapInfo, "test.png");
+
+        /*BitmapInfo bitmapInfo;
+        bitmapInfo.width = 320;
+        bitmapInfo.height = 200;
+        for (int y = 0; y < bitmapInfo.height; y++) {
+            for (int x = 0; x < bitmapInfo.width; x++) {
+                bitmapInfo.data.push_back(0);
+                bitmapInfo.data.push_back(0);
+                bitmapInfo.data.push_back(128);
+                bitmapInfo.data.push_back(255);
+            }
+        }
+
+        m_bitmapDataSource->saveBitmap(bitmapInfo, "test.png");*/
     }
 
     m_openGLErrorDetector->checkOpenGLErrors("ResearchScene002::update");

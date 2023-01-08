@@ -28,13 +28,13 @@ void WindowsBitmapDataSource::saveBitmap(const BitmapInfo& bitmapInfo, const str
 
     for (uint32_t y = 0; y < bitmap->GetHeight(); y++) {
         for (uint32_t x = 0; x < bitmap->GetWidth(); x++) {
-            auto basePixelIndex = (x + bitmapInfo.width * y) * 4;
+            auto basePixelIndex = (x + bitmap->GetWidth() * y) * 4;
             Color color(
                 bitmapInfo.data[basePixelIndex],
                 bitmapInfo.data[basePixelIndex + 1],
                 bitmapInfo.data[basePixelIndex + 2]
             );
-            bitmap->SetPixel(x, y, color);
+            bitmap->SetPixel(x, bitmap->GetHeight() - 1 - y, color);
         }
     }
 
