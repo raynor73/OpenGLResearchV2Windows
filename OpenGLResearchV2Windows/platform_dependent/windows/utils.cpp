@@ -1,6 +1,11 @@
+#include <windows.h>
+#include <gdiplus.h>
+#include <stdio.h>
 #include "utils.h"
 
 using namespace std;
+using namespace GameEngine::Windows::Utils;
+using namespace Gdiplus;
 
 bool GameEngine::Windows::Utils::redirectConsoleIO()
 {
@@ -135,4 +140,44 @@ void GameEngine::Windows::Utils::showDialog(HWND hWnd, WCHAR* title, WCHAR* mess
 void GameEngine::Windows::Utils::showDialog(WCHAR* title, WCHAR* message)
 {
     showDialog(NULL, title, message);
+}
+
+shared_ptr<WCHAR[]> GameEngine::Windows::Utils::stringToWchar(const string& string)
+{
+    auto wcharStringLength = MultiByteToWideChar(CP_ACP, 0, string.c_str(), -1, NULL, 0);
+    auto wcharString = shared_ptr<WCHAR[]>(new WCHAR[wcharStringLength]);
+    MultiByteToWideChar(CP_ACP, 0, string.c_str(), -1, (LPWSTR) wcharString.get(), wcharStringLength);
+
+    return wcharString;
+}
+
+int GameEngine::Windows::Utils::getEncoderClassId(const WCHAR* format, CLSID* classId)
+{
+    UINT  num = 0;          // number of image encoders
+    UINT  size = 0;         // size of the image encoder array in bytes
+
+    ImageCodecInfo* pImageCodecInfo = NULL;
+
+    GetImageEncodersSize(&num, &size);
+    if (size == 0)
+        return -1;  // Failure
+
+    pImageCodecInfo = (ImageCodecInfo*)(malloc(size));
+    if (pImageCodecInfo == NULL)
+        return -1;  // Failure
+
+    GetImageEncoders(num, size, pImageCodecInfo);
+
+    for (UINT j = 0; j < num; ++j)
+    {
+        if (wcscmp(pImageCodecInfo[j].MimeType, format) == 0)
+        {
+            *classId = pImageCodecInfo[j].Clsid;
+            free(pImageCodecInfo);
+            return j;  // Success
+        }
+    }
+
+    free(pImageCodecInfo);
+    return -1;  // Failure
 }

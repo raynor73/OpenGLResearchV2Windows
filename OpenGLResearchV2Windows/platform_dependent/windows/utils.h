@@ -23,6 +23,9 @@ namespace Utils
     std::shared_ptr<WCHAR[]> getString(HINSTANCE hInstance, uint32_t resId);
     void showDialog(HWND hWnd, WCHAR* title, WCHAR* message);
     void showDialog(WCHAR* title, WCHAR* message);
+
+    std::shared_ptr<WCHAR[]> stringToWchar(const std::string& string);
+    int getEncoderClassId(const WCHAR* format, CLSID* classId);
 }
 }
 }

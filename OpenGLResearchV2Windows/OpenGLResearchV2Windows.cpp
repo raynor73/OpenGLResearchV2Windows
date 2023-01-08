@@ -1,6 +1,10 @@
 // OpenGLResearchV2Windows.cpp : Defines the entry point for the application.
 //
 
+#include <windows.h>
+#include <objidl.h>
+#include <gdiplus.h>
+#include <gdiplusheaders.h>
 #include <GL/glew.h>
 #include "framework.h"
 #include "OpenGLResearchV2Windows.h"
@@ -17,21 +21,34 @@
 #include "research/research_scene_002.h"
 #include <sstream>
 #include <game_engine/utils.h>
+#include <WinBase.h>
+#include <stringapiset.h>
+#include <platform_dependent/windows/windows_bitmap_data_source.h>
+#include <platform_dependent/windows/windows_fs_abstraction.h>
+#include <platform_dependent/windows/windows_bitmap_loader.h>
+#include <platform_dependent/windows/windows_read_only_fs_abstraction.h>
 
 using namespace GameEngine;
 using namespace GameEngine::Utils;
 using namespace Windows::Utils;
 using namespace std;
+using namespace Gdiplus;
 
 #define CONSOLE_BUFFER_SIZE 1024
 #define WINDOW_WIDTH 1440
 #define WINDOW_HEIGHT 900
+
+static ULONG_PTR g_gdiPlusToken;
 
 static shared_ptr<WindowsApp> g_app;
 static shared_ptr<Console> g_console;
 static duk_context* g_duktapeContext;
 static shared_ptr<OpenGLErrorDetector> g_openGLErrorDetector;
 static shared_ptr<OpenGLShadersRepository> g_openGLShadersRepository;
+static shared_ptr<BitmapDataSource> g_bitmapDataSource;
+static shared_ptr<FsAbstraction> g_fsAbstraction;
+static shared_ptr<BitmapLoader> g_bitmapLoader;
+static shared_ptr<ReadOnlyFsAbstraction> g_readOnlyFsAbstraction;
 
 static bool g_isShiftPressed = false;
 static bool g_isErrorLogged = false;
@@ -86,7 +103,6 @@ static GLFWwindow* initOpenGL(HINSTANCE hInstance) {
             getString(hInstance, IDS_ERROR_INITIALIZING_GLEW).get()
         );
         return nullptr;
-    
     }
 
     return window;
@@ -317,7 +333,21 @@ static void printOpenGLInfo() {
 static void mainLoop(GLFWwindow* window) {
     printOpenGLInfo();
 
-    auto scene = make_shared<ResearchScene002>(g_openGLErrorDetector, g_openGLShadersRepository);
+    /*DWORD pathSizeWideChar = GetCurrentDirectory(0, NULL);
+    TCHAR* pathBufferWideChar = new TCHAR[uint64_t(pathSizeWideChar) + 1];
+    GetCurrentDirectory(pathSizeWideChar, pathBufferWideChar);
+    ULONG pathSize = WideCharToMultiByte(CP_ACP, 0, pathBufferWideChar, -1, NULL, 0, NULL, NULL);
+    char* pathBuffer = new char[uint64_t(pathSize) + 1L];
+    WideCharToMultiByte(CP_ACP, 0, pathBufferWideChar, -1, pathBuffer, 0, NULL, NULL);
+    L::d("!@#", pathBuffer);
+    delete[] pathBuffer;
+    delete[] pathBufferWideChar;*/
+
+    auto scene = make_shared<ResearchScene002>(
+        g_openGLErrorDetector, 
+        g_openGLShadersRepository,
+        g_bitmapDataSource
+    );
     scene->start();
 
     /* Loop until the user closes the window */
@@ -366,8 +396,6 @@ static void mainLoop(GLFWwindow* window) {
 static void initGame() {
     L::setLogger(make_shared<WindowsLogger>());
 
-    //auto serviceLocator = make_shared<ServiceLocator>();
-
     g_app = make_shared<WindowsApp>();
     g_console = make_shared<Console>();
 
@@ -381,6 +409,10 @@ static void initGame() {
 
     g_openGLErrorDetector = make_shared<OpenGLErrorDetector>();
     g_openGLShadersRepository = make_shared<OpenGLShadersRepository>(g_openGLErrorDetector);
+    g_bitmapLoader = make_shared<WindowsBitmapLoader>();
+    g_readOnlyFsAbstraction = make_shared<WindowsReadOnlyFsAbstraction>();
+    g_fsAbstraction = make_shared<WindowsFsAbstraction>(g_readOnlyFsAbstraction);
+    g_bitmapDataSource = make_shared<WindowsBitmapDataSource>(g_bitmapLoader, g_fsAbstraction);
 }
 
 static duk_ret_t native_print(duk_context* ctx) {
@@ -423,6 +455,15 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ LPWSTR    lpCmdLine,
                      _In_ int       nCmdShow)
 {
+    GdiplusStartupInput gdiplusStartupInput;
+    if (GdiplusStartup(&g_gdiPlusToken, &gdiplusStartupInput, NULL) != Ok) {
+        showDialog(
+            getString(hInstance, IDS_GENERIC_ERROR_TITLE).get(),
+            getString(hInstance, IDS_ERROR_INITIALIZING_GDI_PLUS).get()
+        );
+        return EXIT_FAILURE;
+    }
+
     if (!setupConsolse(hInstance)) {
         return EXIT_FAILURE;
     }

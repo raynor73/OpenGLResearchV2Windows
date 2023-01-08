@@ -16,6 +16,7 @@
 #define IDI_SMALL                       108
 #define IDS_ERROR_CREATING_MAIN_WINDOW  108
 #define IDC_OPENGLRESEARCHV2WINDOWS     109
+#define IDS_ERROR_INITIALIZING_GDI_PLUS 110
 #define IDR_MAINFRAME                   128
 #define IDC_STATIC                      -1
 

@@ -112,5 +112,11 @@ void ResearchScene002::update()
 
     glFlush();
 
+    if (!m_isSaved) {
+        m_isSaved = true;
+
+
+    }
+
     m_openGLErrorDetector->checkOpenGLErrors("ResearchScene002::update");
 }

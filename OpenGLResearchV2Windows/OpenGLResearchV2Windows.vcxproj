@@ -133,7 +133,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(ProjectDir)third_party\libs\glfw3_mt.lib;$(ProjectDir)third_party\libs\OpenGL32.Lib;$(ProjectDir)third_party\libs\glew32s.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(ProjectDir)third_party\libs\glfw3_mt.lib;$(ProjectDir)third_party\libs\OpenGL32.Lib;$(ProjectDir)third_party\libs\glew32s.lib;Gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -157,17 +157,24 @@
   <ItemGroup>
     <ClInclude Include="framework.h" />
     <ClInclude Include="game_engine\app.h" />
+    <ClInclude Include="game_engine\bitmap_data_source.h" />
     <ClInclude Include="game_engine\bitmap_info.h" />
     <ClInclude Include="game_engine\bitmap_loader.h" />
     <ClInclude Include="game_engine\console.h" />
     <ClInclude Include="game_engine\constants.h" />
+    <ClInclude Include="game_engine\fs_abstraction.h" />
     <ClInclude Include="game_engine\logger.h" />
+    <ClInclude Include="game_engine\read_only_fs_abstraction.h" />
     <ClInclude Include="game_engine\utils.h" />
     <ClInclude Include="game_engine\without_generated_methods.h" />
     <ClInclude Include="OpenGLResearchV2Windows.h" />
     <ClInclude Include="platform_dependent\windows\utils.h" />
     <ClInclude Include="platform_dependent\windows\windows_app.h" />
+    <ClInclude Include="platform_dependent\windows\windows_bitmap_data_source.h" />
+    <ClInclude Include="platform_dependent\windows\windows_bitmap_loader.h" />
+    <ClInclude Include="platform_dependent\windows\windows_fs_abstraction.h" />
     <ClInclude Include="platform_dependent\windows\windows_logger.h" />
+    <ClInclude Include="platform_dependent\windows\windows_read_only_fs_abstraction.h" />
     <ClInclude Include="rendering_engine\opengl_error_detector.h" />
     <ClInclude Include="rendering_engine\opengl_shaders_repository.h" />
     <ClInclude Include="rendering_engine\opengl_shader_program_container.h" />
@@ -218,7 +225,11 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <ClCompile Include="platform_dependent\windows\windows_app.cpp" />
+    <ClCompile Include="platform_dependent\windows\windows_bitmap_data_source.cpp" />
+    <ClCompile Include="platform_dependent\windows\windows_bitmap_loader.cpp" />
+    <ClCompile Include="platform_dependent\windows\windows_fs_abstraction.cpp" />
     <ClCompile Include="platform_dependent\windows\windows_logger.cpp" />
+    <ClCompile Include="platform_dependent\windows\windows_read_only_fs_abstraction.cpp" />
     <ClCompile Include="rendering_engine\opengl_error_detector.cpp" />
     <ClCompile Include="rendering_engine\opengl_shaders_repository.cpp" />
     <ClCompile Include="rendering_engine\opengl_shader_program_container.cpp" />
