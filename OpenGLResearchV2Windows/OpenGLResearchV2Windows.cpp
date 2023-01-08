@@ -27,6 +27,7 @@
 #include <platform_dependent/windows/windows_fs_abstraction.h>
 #include <platform_dependent/windows/windows_bitmap_loader.h>
 #include <platform_dependent/windows/windows_read_only_fs_abstraction.h>
+#include <iomanip>
 
 using namespace GameEngine;
 using namespace GameEngine::Utils;
@@ -34,6 +35,7 @@ using namespace Windows::Utils;
 using namespace std;
 using namespace Gdiplus;
 
+#define DEBUG_OPENGL
 #define CONSOLE_BUFFER_SIZE 1024
 #define WINDOW_WIDTH 1440
 #define WINDOW_HEIGHT 900
@@ -65,6 +67,29 @@ static bool setupConsolse(HINSTANCE hInstance) {
     return true;
 }
 
+static void GLAPIENTRY openGLDebugCallback(
+    GLenum source,
+    GLenum type, 
+    GLuint id,
+    GLenum severity, 
+    GLsizei length, 
+    const GLchar* message, 
+    const void* userParam
+) {
+    stringstream ss;
+    ss << "Debug Message: SOURCE(0x" << setfill('0') << setw(4) << hex << source << "), ";
+    ss << "TYPE(0x" << setfill('0') << setw(4) << hex << type << "), ";
+    ss << "ID(0x" << setfill('0') << setw(8) << hex << id << "), ";
+    ss << "SEVERITY(0x" << setfill('0') << setw(4) << hex << severity << "), ";
+    ss << message;
+    L::d("OpenGL", ss.str());
+    /*printf("Debug Message: SOURCE(0x%04X),"
+        "TYPE(0x%04X),"
+        "ID(0x%08X),"
+        "SEVERITY(0x%04X), \"%s\"\n",
+        source, type, id, severity, message);*/
+}
+
 static GLFWwindow* initOpenGL(HINSTANCE hInstance) {
     GLFWwindow* window;
 
@@ -82,6 +107,9 @@ static GLFWwindow* initOpenGL(HINSTANCE hInstance) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#ifdef DEBUG_OPENGL
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif
 
     window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Game Engine", NULL, NULL);
     if (!window) {
@@ -104,6 +132,10 @@ static GLFWwindow* initOpenGL(HINSTANCE hInstance) {
         );
         return nullptr;
     }
+
+#ifdef DEBUG_OPENGL
+    glDebugMessageCallback(openGLDebugCallback, nullptr);
+#endif
 
     return window;
 }

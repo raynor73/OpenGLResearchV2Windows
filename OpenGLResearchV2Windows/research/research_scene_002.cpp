@@ -97,6 +97,22 @@ void ResearchScene002::start()
     GLfloat viewport[4];
     glGetFloatv(GL_VIEWPORT, viewport);
     m_projection = glm::ortho<float>(0, viewport[2], 0, viewport[3], 0.1f, 100.0f);
+
+
+
+    GLuint framebufferId;
+    glGenFramebuffers(1, &framebufferId);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebufferId);
+
+    GLuint colorRenderbufferId;
+    glGenRenderbuffers(1, &colorRenderbufferId);
+    glBindRenderbuffer(GL_RENDERBUFFER, colorRenderbufferId);
+    auto viewportData = glGetIntegerv4(GL_VIEWPORT);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA, viewportData[2], viewportData[3]);
+    glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbufferId);
+
+    m_openGLErrorDetector->checkOpenGLErrors("ResearchScene002::start2");
+    m_openGLErrorDetector->checkFramebufferStatus(GL_DRAW_FRAMEBUFFER, "ResearchScene002::start2");
 }
 
 void ResearchScene002::update()
@@ -112,7 +128,10 @@ void ResearchScene002::update()
 
     glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
 
+    //glBlitFramebuffer()
+
     glFlush();
+
 
     if (!m_isSaved) {
         m_isSaved = true;
@@ -130,7 +149,9 @@ void ResearchScene002::update()
         L::d("!@#", ss.str());
         
         glBindBuffer(GL_PIXEL_PACK_BUFFER, drawFramebufferName);
+        m_openGLErrorDetector->checkOpenGLErrors("ResearchScene002::update2");
         glReadPixels(0, 0, bitmapInfo.width, bitmapInfo.height, GL_RGBA, GL_UNSIGNED_BYTE, bitmapInfo.data.data());
+        m_openGLErrorDetector->checkOpenGLErrors("ResearchScene002::update3");
         m_bitmapDataSource->saveBitmap(bitmapInfo, "test.png");
 
         /*BitmapInfo bitmapInfo;

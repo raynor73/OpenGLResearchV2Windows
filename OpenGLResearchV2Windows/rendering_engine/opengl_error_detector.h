@@ -27,6 +27,6 @@ public:
     void checkOpenGLErrors(const std::string& locationName);
     void checkShaderCompilationError(GLuint shader, const std::string& locationName);
     void checkShaderLinkingError(GLuint shader, const std::string& locationName);
-    void checkFramebufferStatus(const std::string& locationName);
+    void checkFramebufferStatus(GLenum target, const std::string& locationName);
 };
 }

@@ -68,8 +68,8 @@ void OpenGLErrorDetector::checkShaderLinkingError(GLuint shader, const string& l
     }
 }
 
-void OpenGLErrorDetector::checkFramebufferStatus(const string& locationName) {
-    auto framebufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+void OpenGLErrorDetector::checkFramebufferStatus(GLenum target, const string& locationName) {
+    auto framebufferStatus = glCheckFramebufferStatus(target);
     if (framebufferStatus != GL_FRAMEBUFFER_COMPLETE) {
         m_isOpenGLErrorDetected = true;
         string statusDescription;

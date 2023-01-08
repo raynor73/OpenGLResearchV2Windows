@@ -45,3 +45,10 @@ void GameEngine::Utils::logGLInteger64(const std::string& tag, const std::string
     ss << nameString << ": " << glGetInteger64(nameCode);
     L::d(tag, ss.str());
 }
+
+glm::ivec4 GameEngine::Utils::glGetIntegerv4(GLenum name)
+{
+    GLint data[4];
+    glGetIntegerv(name, data);
+    return glm::ivec4(data[0], data[1], data[2], data[3]);
+}
