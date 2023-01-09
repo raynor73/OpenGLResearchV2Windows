@@ -102,7 +102,7 @@ void ResearchScene002::start()
 
     GLuint framebufferId;
     glGenFramebuffers(1, &framebufferId);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebufferId);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
 
     GLuint colorRenderbufferId;
     glGenRenderbuffers(1, &colorRenderbufferId);
@@ -112,7 +112,7 @@ void ResearchScene002::start()
     glFramebufferRenderbuffer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorRenderbufferId);
 
     m_openGLErrorDetector->checkOpenGLErrors("ResearchScene002::start2");
-    m_openGLErrorDetector->checkFramebufferStatus(GL_DRAW_FRAMEBUFFER, "ResearchScene002::start2");
+    m_openGLErrorDetector->checkFramebufferStatus(GL_FRAMEBUFFER, "ResearchScene002::start2");
 }
 
 void ResearchScene002::update()
@@ -148,7 +148,8 @@ void ResearchScene002::update()
         ss << "drawFramebufferName: " << drawFramebufferName;
         L::d("!@#", ss.str());
         
-        glBindBuffer(GL_PIXEL_PACK_BUFFER, drawFramebufferName);
+        //glBindBuffer(GL_PIXEL_PACK_BUFFER, drawFramebufferName);
+        glReadBuffer(GL_COLOR_ATTACHMENT0);
         m_openGLErrorDetector->checkOpenGLErrors("ResearchScene002::update2");
         glReadPixels(0, 0, bitmapInfo.width, bitmapInfo.height, GL_RGBA, GL_UNSIGNED_BYTE, bitmapInfo.data.data());
         m_openGLErrorDetector->checkOpenGLErrors("ResearchScene002::update3");
