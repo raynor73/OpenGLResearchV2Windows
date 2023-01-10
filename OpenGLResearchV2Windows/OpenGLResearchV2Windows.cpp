@@ -19,6 +19,7 @@
 #include <rendering_engine/opengl_shaders_repository.h>
 #include "research/research_scene_001.h"
 #include "research/research_scene_002.h"
+#include "research/research_scene_003.h"
 #include <sstream>
 #include <game_engine/utils.h>
 #include <WinBase.h>
@@ -387,10 +388,9 @@ static void mainLoop(GLFWwindow* window) {
     delete[] pathBuffer;
     delete[] pathBufferWideChar;*/
 
-    auto scene = make_shared<ResearchScene002>(
+    auto scene = make_shared<ResearchScene003>(
         g_openGLErrorDetector, 
-        g_openGLShadersRepository,
-        g_bitmapDataSource
+        g_openGLShadersRepository
     );
     scene->start();
 

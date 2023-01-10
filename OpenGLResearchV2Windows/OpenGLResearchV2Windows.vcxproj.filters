@@ -222,6 +222,9 @@
     <ClInclude Include="third_party\imgui\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="research\research_scene_003.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="OpenGLResearchV2Windows.cpp">
@@ -294,6 +297,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="third_party\imgui\imgui_impl_opengl3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="research\research_scene_003.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
