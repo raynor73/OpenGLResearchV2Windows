@@ -49,6 +49,7 @@ void ResearchScene003::renderUi()
 
     ImGui::Begin("Scene");
     ImGui::Text("FPS: %.02f", m_fpsCalculator.fps());
+    ImGui::Checkbox("Antialiasing", &m_isAntiAliasingEnabled);
     ImGui::SliderFloat("Model z-angle", &m_zAngle, 0, 360);
     ImGui::Text("Camera");
     ImGui::SliderFloat("x", &m_cameraPosition.x, -10, 10);
@@ -139,7 +140,7 @@ void ResearchScene003::update(float dt)
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    /*if (m_isAntiAliasingEnabled) {
+    if (m_isAntiAliasingEnabled) {
         glEnable(GL_LINE_SMOOTH);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -148,9 +149,7 @@ void ResearchScene003::update(float dt)
         glDisable(GL_LINE_SMOOTH);
         glDisable(GL_BLEND);
     }
-    glDrawElements(GL_LINE_LOOP, 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));*/
-
-    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
+    glDrawElements(GL_LINE_LOOP, 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
 
     renderUi();
 

@@ -24,6 +24,8 @@ class ResearchScene003 : public ResearchScene
     uint64_t m_prevTimestamp;
     bool m_prevTimestampSet;
 
+    bool m_isAntiAliasingEnabled;
+
     glm::vec3 m_cameraPosition;
 
     glm::mat4 m_projection;
@@ -47,7 +49,8 @@ public:
         m_up(glm::vec3(0, 1, 0)),
         m_forward(glm::vec3(0, 0, -1)),
         m_prevTimestamp(0),
-        m_prevTimestampSet(false)
+        m_prevTimestampSet(false),
+        m_isAntiAliasingEnabled(false)
     {}
 
     void start() override;
