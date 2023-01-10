@@ -29,6 +29,7 @@
 #include <platform_dependent/windows/windows_bitmap_loader.h>
 #include <platform_dependent/windows/windows_read_only_fs_abstraction.h>
 #include <iomanip>
+#include <game_engine/time_provider.h>
 
 using namespace GameEngine;
 using namespace GameEngine::Utils;
@@ -52,6 +53,7 @@ static shared_ptr<BitmapDataSource> g_bitmapDataSource;
 static shared_ptr<FsAbstraction> g_fsAbstraction;
 static shared_ptr<BitmapLoader> g_bitmapLoader;
 static shared_ptr<ReadOnlyFsAbstraction> g_readOnlyFsAbstraction;
+static shared_ptr<TimeProvider> g_timeProvider;
 
 static bool g_isShiftPressed = false;
 static bool g_isErrorLogged = false;
@@ -390,7 +392,8 @@ static void mainLoop(GLFWwindow* window) {
 
     auto scene = make_shared<ResearchScene003>(
         g_openGLErrorDetector, 
-        g_openGLShadersRepository
+        g_openGLShadersRepository,
+        g_timeProvider
     );
     scene->start();
 
@@ -457,6 +460,7 @@ static void initGame() {
     g_readOnlyFsAbstraction = make_shared<WindowsReadOnlyFsAbstraction>();
     g_fsAbstraction = make_shared<WindowsFsAbstraction>(g_readOnlyFsAbstraction);
     g_bitmapDataSource = make_shared<WindowsBitmapDataSource>(g_bitmapLoader, g_fsAbstraction);
+    g_timeProvider = make_shared<TimeProvider>();
 }
 
 static duk_ret_t native_print(duk_context* ctx) {

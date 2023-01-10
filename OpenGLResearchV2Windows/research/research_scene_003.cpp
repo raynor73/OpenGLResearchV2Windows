@@ -3,6 +3,8 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <rendering_engine/utils.h>
 #include <glm/ext.hpp>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 using namespace GameEngine;
 using namespace std;
@@ -35,7 +37,7 @@ void main() {
 }
 )";
 
-static bool m_shouldShowDemoWindow = true;
+//static bool m_shouldShowDemoWindow = true;
 
 void ResearchScene003::renderUi()
 {
@@ -43,7 +45,11 @@ void ResearchScene003::renderUi()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::ShowDemoWindow(&m_shouldShowDemoWindow);
+    //ImGui::ShowDemoWindow(&m_shouldShowDemoWindow);
+    ImGui::Begin("Scene");
+    ImGui::SliderFloat("Model z-angle", &m_zAngle, 0, 360);
+    ImGui::Text("FPS: %.02f", m_fpsCalculator.fps());
+    ImGui::End();
 
     ImGui::Render();
     int display_w, display_h;
@@ -59,21 +65,22 @@ void ResearchScene003::renderUi()
 
 void ResearchScene003::start()
 {
-    m_cameraPosition = { 0, 0, 1 };
+    m_cameraPosition = { 0, 0, 5 };
     m_cameraLookAt = { 0, 0, 0 };
+    m_zAngle = 0;
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
     GLfloat vertices[] = {
-        20, 10, 0.0,
+        1, -1, 0.0,
         1.0, 0.0, 0.0,
 
-        15, 20, 0.0,
+        0, 1, 0.0,
         0.0, 1.0, 0.0,
 
-        10, 10, 0.0,
+        -1, -1, 0.0,
         0.0, 0.0, 1.0
     };
     GLuint vertexBuffer;
@@ -105,15 +112,23 @@ void ResearchScene003::start()
     m_openGLErrorDetector->checkOpenGLErrors("ResearchScene003::start");
 
     glm::vec4 viewport = glGetIntegerv4(GL_VIEWPORT);
-    m_projection = glm::ortho<float>(0, viewport[2], 0, viewport[3], 0.1f, 100.0f);
+    m_projection = glm::perspective<float>(70, viewport[2] / viewport[3], 0.1f, 1000);
 }
 
-void ResearchScene003::update()
+void ResearchScene003::update(float dt)
 {
+    m_fpsCalculator.update(dt);
+
     auto shaderProgramContainer = m_shadersRepository->getShaderProgramContainer("shaderProgram");
     glUseProgram(shaderProgramContainer.shaderProgram());
 
     auto modelMatrix = glm::identity<glm::mat4>();
+    auto rotation = glm::rotate(
+        glm::identity<glm::quat>(),
+        glm::radians(m_zAngle),
+        glm::vec3(0, 0, 1)
+    );
+    modelMatrix *= glm::toMat4(rotation);
     auto viewMatrix = glm::lookAt(m_cameraPosition, m_cameraLookAt, m_up);
 
     auto mvpMatrix = m_projection * viewMatrix * modelMatrix;
@@ -126,5 +141,14 @@ void ResearchScene003::update()
     renderUi();
 
     m_openGLErrorDetector->checkOpenGLErrors("ResearchScene003::update");
+}
 
+void ResearchScene003::update() {
+    auto currentTimestamp = m_timeProvider->getTimestamp();
+    if (m_prevTimestampSet) {
+        float dt = (currentTimestamp - m_prevTimestamp) / TimeProvider::NANOS_IN_SECOND;
+        update(dt);
+    }
+    m_prevTimestamp = currentTimestamp;
+    m_prevTimestampSet = true;
 }
