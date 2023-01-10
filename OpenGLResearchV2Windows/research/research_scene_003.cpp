@@ -37,7 +37,7 @@ void main() {
 }
 )";
 
-//static bool m_shouldShowDemoWindow = true;
+static bool m_shouldShowDemoWindow = true;
 
 void ResearchScene003::renderUi()
 {
@@ -46,9 +46,15 @@ void ResearchScene003::renderUi()
     ImGui::NewFrame();
 
     //ImGui::ShowDemoWindow(&m_shouldShowDemoWindow);
+
     ImGui::Begin("Scene");
-    ImGui::SliderFloat("Model z-angle", &m_zAngle, 0, 360);
     ImGui::Text("FPS: %.02f", m_fpsCalculator.fps());
+    ImGui::Checkbox("Antialiasing", &m_isAntiAliasingEnabled);
+    ImGui::SliderFloat("Model z-angle", &m_zAngle, 0, 360);
+    ImGui::Text("Camera");
+    ImGui::SliderFloat("x", &m_cameraPosition.x, -10, 10);
+    ImGui::SliderFloat("y", &m_cameraPosition.y, -10, 10);
+    ImGui::SliderFloat("z", &m_cameraPosition.z, -10, 10);
     ImGui::End();
 
     ImGui::Render();
@@ -56,17 +62,13 @@ void ResearchScene003::renderUi()
     auto viewport = glGetIntegerv4(GL_VIEWPORT);
     display_w = viewport[2];
     display_h = viewport[3];
-    //glfwGetFramebufferSize(window, &display_w, &display_h);
     glViewport(0, 0, display_w, display_h);
-    /*glClearColor(m_clearColor.x * m_clearColor.w, m_clearColor.y * m_clearColor.w, m_clearColor.z * m_clearColor.w, m_clearColor.w);
-    glClear(GL_COLOR_BUFFER_BIT);*/
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
 void ResearchScene003::start()
 {
     m_cameraPosition = { 0, 0, 5 };
-    m_cameraLookAt = { 0, 0, 0 };
     m_zAngle = 0;
 
     GLuint vao;
@@ -113,6 +115,7 @@ void ResearchScene003::start()
 
     glm::vec4 viewport = glGetIntegerv4(GL_VIEWPORT);
     m_projection = glm::perspective<float>(70, viewport[2] / viewport[3], 0.1f, 1000);
+
 }
 
 void ResearchScene003::update(float dt)
@@ -129,14 +132,33 @@ void ResearchScene003::update(float dt)
         glm::vec3(0, 0, 1)
     );
     modelMatrix *= glm::toMat4(rotation);
-    auto viewMatrix = glm::lookAt(m_cameraPosition, m_cameraLookAt, m_up);
+    auto viewMatrix = glm::lookAt(m_cameraPosition, m_cameraPosition + m_forward, m_up);
 
     auto mvpMatrix = m_projection * viewMatrix * modelMatrix;
     auto mvpMatrixUniform = shaderProgramContainer.mvpMatrixUniform();
     glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, &mvpMatrix[0][0]);
 
     glClear(GL_COLOR_BUFFER_BIT);
-    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
+
+    if (m_isAntiAliasingEnabled) {
+        glEnable(GL_LINE_SMOOTH);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+        
+        /*glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+        glEnable(GL_POLYGON_SMOOTH);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA_SATURATE);
+        glBlendFunc(GL_DST_ALPHA, GL_ONE);*/
+    } else {
+        //glDisable(GL_POLYGON_SMOOTH);
+        glDisable(GL_LINE_SMOOTH);
+        glDisable(GL_BLEND);
+    }
+
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glDrawElements(GL_LINE_LOOP, 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
 
     renderUi();
 
