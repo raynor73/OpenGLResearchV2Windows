@@ -8,9 +8,6 @@
 #include <GL/glew.h>
 #include "framework.h"
 #include "OpenGLResearchV2Windows.h"
-#include <third_party/imgui/imgui.h>
-#include <third_party/imgui/imgui_impl_glfw.h>
-#include <third_party/imgui/imgui_impl_opengl3.h>
 #include <GLFW/glfw3.h>
 #include <platform_dependent/windows/utils.h>
 #include <platform_dependent/windows/windows_app.h>
@@ -377,9 +374,6 @@ static void printOpenGLInfo() {
     logGLInteger("OpenGL", "GL_MAX_COLOR_ATTACHMENTS", GL_MAX_COLOR_ATTACHMENTS);
 }
 
-static bool show_demo_window = true;
-static ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
 static void mainLoop(GLFWwindow* window) {
     printOpenGLInfo();
 
@@ -398,7 +392,7 @@ static void mainLoop(GLFWwindow* window) {
         g_openGLShadersRepository,
         g_bitmapDataSource
     );
-    //scene->start();
+    scene->start();
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window)) {
@@ -420,7 +414,7 @@ static void mainLoop(GLFWwindow* window) {
                 );
             }
         } else {
-            //scene->update();
+            scene->update();
 
             /*glClear(GL_COLOR_BUFFER_BIT);
 
@@ -436,23 +430,6 @@ static void mainLoop(GLFWwindow* window) {
 
         /* Poll for and process events */
         glfwPollEvents();
-
-
-
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        ImGui::ShowDemoWindow(&show_demo_window);
-
-        ImGui::Render();
-        int display_w, display_h;
-        glfwGetFramebufferSize(window, &display_w, &display_h);
-        glViewport(0, 0, display_w, display_h);
-        glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
-        glClear(GL_COLOR_BUFFER_BIT);
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
 
         if (g_app->isExitRequested()) {
             glfwDestroyWindow(window);

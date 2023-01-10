@@ -100,9 +100,8 @@ void ResearchScene002::start()
 
 
 
-    GLuint framebufferId;
-    glGenFramebuffers(1, &framebufferId);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
+    glGenFramebuffers(1, &m_offscreenFrameBufferId);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_offscreenFrameBufferId);
 
     GLuint colorRenderbufferId;
     glGenRenderbuffers(1, &colorRenderbufferId);
@@ -115,25 +114,46 @@ void ResearchScene002::start()
     m_openGLErrorDetector->checkFramebufferStatus(GL_FRAMEBUFFER, "ResearchScene002::start2");
 }
 
+void ResearchScene002::renderUi()
+{
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::ShowDemoWindow(&m_shouldShowDemoWindow);
+
+    ImGui::Render();
+    int display_w, display_h;
+    auto viewport = glGetIntegerv4(GL_VIEWPORT);
+    display_w = viewport[2];
+    display_h = viewport[3];
+    //glfwGetFramebufferSize(window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+    glClearColor(m_clearColor.x * m_clearColor.w, m_clearColor.y * m_clearColor.w, m_clearColor.z * m_clearColor.w, m_clearColor.w);
+    glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
 void ResearchScene002::update()
 {
+    auto shaderProgramContainer = m_shadersRepository->getShaderProgramContainer("shaderProgram");
+    glUseProgram(shaderProgramContainer.shaderProgram());
+
     auto modelMatrix = glm::identity<glm::mat4>();
     auto viewMatrix = glm::lookAt(m_cameraPosition, m_cameraLookAt, m_up);
 
     auto mvpMatrix = m_projection * viewMatrix * modelMatrix;
-    auto mvpMatrixUniform = m_shadersRepository->getShaderProgramContainer("shaderProgram").mvpMatrixUniform();
+    auto mvpMatrixUniform = shaderProgramContainer.mvpMatrixUniform();
     glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, &mvpMatrix[0][0]);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, m_offscreenFrameBufferId);
     glClear(GL_COLOR_BUFFER_BIT);
-
     glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
-
     //glBlitFramebuffer()
+    //glFlush();
 
-    glFlush();
 
-
-    if (false/*!m_isSaved*/) {
+    if (!m_isSaved) {
         m_isSaved = true;
 
         BitmapInfo bitmapInfo;
@@ -142,7 +162,7 @@ void ResearchScene002::update()
         bitmapInfo.width = viewportSize[2];
         bitmapInfo.height = viewportSize[3];
         bitmapInfo.data.resize(bitmapInfo.width * bitmapInfo.height * 4);
-        auto drawFramebufferName = glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
+        auto drawFramebufferName = m_offscreenFrameBufferId;// glGetInteger(GL_DRAW_FRAMEBUFFER_BINDING);
 
         stringstream ss;
         ss << "drawFramebufferName: " << drawFramebufferName;
@@ -169,6 +189,9 @@ void ResearchScene002::update()
 
         m_bitmapDataSource->saveBitmap(bitmapInfo, "test.png");*/
     }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    renderUi();
 
     m_openGLErrorDetector->checkOpenGLErrors("ResearchScene002::update");
 }
