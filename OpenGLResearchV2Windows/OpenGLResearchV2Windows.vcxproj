@@ -186,6 +186,15 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="third_party\duktape\duktape.h" />
     <ClInclude Include="third_party\duktape\duk_config.h" />
+    <ClInclude Include="third_party\imgui\imconfig.h" />
+    <ClInclude Include="third_party\imgui\imgui.h" />
+    <ClInclude Include="third_party\imgui\imgui_impl_glfw.h" />
+    <ClInclude Include="third_party\imgui\imgui_impl_opengl3.h" />
+    <ClInclude Include="third_party\imgui\imgui_impl_opengl3_loader.h" />
+    <ClInclude Include="third_party\imgui\imgui_internal.h" />
+    <ClInclude Include="third_party\imgui\imstb_rectpack.h" />
+    <ClInclude Include="third_party\imgui\imstb_textedit.h" />
+    <ClInclude Include="third_party\imgui\imstb_truetype.h" />
     <ClInclude Include="third_party\include\GLFW\glfw3.h" />
     <ClInclude Include="third_party\include\GLFW\glfw3native.h" />
     <ClInclude Include="third_party\include\glm\common.hpp" />
@@ -236,6 +245,13 @@
     <ClCompile Include="research\research_scene_001.cpp" />
     <ClCompile Include="research\research_scene_002.cpp" />
     <ClCompile Include="third_party\duktape\duktape.c" />
+    <ClCompile Include="third_party\imgui\imgui.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_demo.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_draw.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_impl_glfw.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_impl_opengl3.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_tables.cpp" />
+    <ClCompile Include="third_party\imgui\imgui_widgets.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="OpenGLResearchV2Windows.rc" />

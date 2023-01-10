@@ -133,7 +133,7 @@ void ResearchScene002::update()
     glFlush();
 
 
-    if (!m_isSaved) {
+    if (false/*!m_isSaved*/) {
         m_isSaved = true;
 
         BitmapInfo bitmapInfo;
