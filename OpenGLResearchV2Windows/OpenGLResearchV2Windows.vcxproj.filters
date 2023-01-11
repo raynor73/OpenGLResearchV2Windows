@@ -566,6 +566,9 @@
     <ClCompile Include="platform_dependent\windows\windows_mesh_loader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="rendering_engine\utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="OpenGLResearchV2Windows.rc">

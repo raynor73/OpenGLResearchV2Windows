@@ -5,10 +5,12 @@
 #include <glm/ext.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <rendering_engine/utils.h>
 
 using namespace GameEngine;
 using namespace std;
 using namespace GameEngine::Utils;
+using namespace GameEngine::RenderingEngine::Utils;
 
 static const char* g_vertexShaderSource = R"(
 #version 400 core
@@ -45,7 +47,6 @@ void TexturesResearchScene::renderUi()
 
     ImGui::Begin("Scene");
     ImGui::Text("FPS: %.02f", m_fpsCalculator.fps());
-    ImGui::Checkbox("Antialiasing", &m_isAntiAliasingEnabled);
     ImGui::SliderFloat("Model z-angle", &m_zAngle, 0, 360);
     ImGui::Text("Camera");
     ImGui::SliderFloat("x", &m_cameraPosition.x, -10, 10);
@@ -71,30 +72,18 @@ void TexturesResearchScene::start()
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
 
-    //auto boxMesh = m_meshLoader->loadMesh("meshes/box.obj");
+    m_boxMesh = m_meshLoader->loadMesh("meshes/box.obj");
 
-    GLfloat vertices[] = {
-        1, -1, 0.0,
-        1.0, 0.0, 0.0,
-
-        0, 1, 0.0,
-        0.0, 1.0, 0.0,
-
-        -1, -1, 0.0,
-        0.0, 0.0, 1.0
-    };
+    vector<float> vertexData = prepareVertexData(m_boxMesh);
     GLuint vertexBuffer;
     glGenBuffers(1, &vertexBuffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexData.size() * sizeof(float), vertexData.data(), GL_STATIC_DRAW);
 
-    GLushort indices[] = {
-        0, 1, 2
-    };
     GLuint indexBuffer;
     glGenBuffers(1, &indexBuffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_boxMesh.indices().size() * sizeof(uint16_t), m_boxMesh.indices().data(), GL_STATIC_DRAW);
 
     m_shadersRepository->createVertexShader("vertexShader", g_vertexShaderSource);
     m_shadersRepository->createFragmentShader("fragmentShader", g_fragmentShaderSource);
@@ -103,10 +92,24 @@ void TexturesResearchScene::start()
     auto shaderProgram = m_shadersRepository->getShaderProgramContainer("shaderProgram").shaderProgram();
     glUseProgram(shaderProgram);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, BUFFER_OFFSET(0));
+    glVertexAttribPointer(
+        0,
+        3,
+        GL_FLOAT,
+        GL_FALSE,
+        sizeof(GLfloat) * Vertex::VERTEX_COMPONENTS, 
+        BUFFER_OFFSET(0)
+    );
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, BUFFER_OFFSET(sizeof(GLfloat) * 3));
+    glVertexAttribPointer(
+        1, 
+        2, 
+        GL_FLOAT, 
+        GL_FALSE, 
+        sizeof(GLfloat) * Vertex::VERTEX_COMPONENTS, 
+        BUFFER_OFFSET(sizeof(GLfloat) * (Vertex::VERTEX_POSITION_COMPONENTS + Vertex::VERTEX_NORMAL_COMPONENTS))
+    );
     glEnableVertexAttribArray(1);
 
     m_openGLErrorDetector->checkOpenGLErrors("TexturesResearchScene::start");
@@ -137,17 +140,7 @@ void TexturesResearchScene::update(float dt)
 
     glClear(GL_COLOR_BUFFER_BIT);
 
-    if (m_isAntiAliasingEnabled) {
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-    }
-    else {
-        glDisable(GL_LINE_SMOOTH);
-        glDisable(GL_BLEND);
-    }
-    glDrawElements(GL_LINE_LOOP, 3, GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
+    glDrawElements(GL_TRIANGLES, m_boxMesh.indices().size(), GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
 
     renderUi();
 

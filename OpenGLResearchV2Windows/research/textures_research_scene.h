@@ -17,8 +17,6 @@ class TexturesResearchScene : public SceneWithTime
     glm::vec3 m_up;
     glm::vec3 m_forward;
 
-    bool m_isAntiAliasingEnabled;
-
     glm::vec3 m_cameraPosition;
 
     glm::mat4 m_projection;
@@ -26,6 +24,8 @@ class TexturesResearchScene : public SceneWithTime
     FpsCalculator m_fpsCalculator;
 
     float m_zAngle;
+
+    GameEngine::Mesh m_boxMesh;
 
     void renderUi();
 
@@ -38,8 +38,7 @@ public:
     ) : SceneWithTime(openGLErrorDetector, shadersRepository, timeProvider),
         m_meshLoader(meshLoader),
         m_up(glm::vec3(0, 1, 0)),
-        m_forward(glm::vec3(0, 0, -1)),
-        m_isAntiAliasingEnabled(false)
+        m_forward(glm::vec3(0, 0, -1))
     {}
 
     void start() override;

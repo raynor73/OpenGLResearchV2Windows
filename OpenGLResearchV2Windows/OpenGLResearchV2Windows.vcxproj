@@ -328,6 +328,9 @@
     <ClCompile Include="rendering_engine\opengl_error_detector.cpp" />
     <ClCompile Include="rendering_engine\opengl_shaders_repository.cpp" />
     <ClCompile Include="rendering_engine\opengl_shader_program_container.cpp" />
+    <ClCompile Include="rendering_engine\utils.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(RelativeDir)</ObjectFileName>
+    </ClCompile>
     <ClCompile Include="research\fps_calculator.cpp" />
     <ClCompile Include="research\research_scene_001.cpp" />
     <ClCompile Include="research\research_scene_002.cpp" />
