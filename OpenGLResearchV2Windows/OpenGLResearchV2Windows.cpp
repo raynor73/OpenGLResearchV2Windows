@@ -20,6 +20,7 @@
 #include "research/research_scene_001.h"
 #include "research/research_scene_002.h"
 #include "research/research_scene_003.h"
+#include <research/textures_research_scene.h>
 #include <sstream>
 #include <game_engine/utils.h>
 #include <WinBase.h>
@@ -30,6 +31,7 @@
 #include <platform_dependent/windows/windows_read_only_fs_abstraction.h>
 #include <iomanip>
 #include <game_engine/time_provider.h>
+#include <platform_dependent/windows/windows_mesh_loader.h>
 
 using namespace GameEngine;
 using namespace GameEngine::Utils;
@@ -54,6 +56,7 @@ static shared_ptr<FsAbstraction> g_fsAbstraction;
 static shared_ptr<BitmapLoader> g_bitmapLoader;
 static shared_ptr<ReadOnlyFsAbstraction> g_readOnlyFsAbstraction;
 static shared_ptr<TimeProvider> g_timeProvider;
+static shared_ptr<MeshLoader> g_meshLoader;
 
 static bool g_isShiftPressed = false;
 static bool g_isErrorLogged = false;
@@ -390,10 +393,11 @@ static void mainLoop(GLFWwindow* window) {
     delete[] pathBuffer;
     delete[] pathBufferWideChar;*/
 
-    auto scene = make_shared<ResearchScene003>(
+    auto scene = make_shared<TexturesResearchScene>(
         g_openGLErrorDetector, 
         g_openGLShadersRepository,
-        g_timeProvider
+        g_timeProvider,
+        g_meshLoader
     );
     scene->start();
 
@@ -417,7 +421,7 @@ static void mainLoop(GLFWwindow* window) {
                 );
             }
         } else {
-            scene->update();
+            scene->SceneWithTime::update();
 
             /*glClear(GL_COLOR_BUFFER_BIT);
 
@@ -461,6 +465,7 @@ static void initGame() {
     g_fsAbstraction = make_shared<WindowsFsAbstraction>(g_readOnlyFsAbstraction);
     g_bitmapDataSource = make_shared<WindowsBitmapDataSource>(g_bitmapLoader, g_fsAbstraction);
     g_timeProvider = make_shared<TimeProvider>();
+    g_meshLoader = make_shared<WindowsMeshLoader>(g_readOnlyFsAbstraction);
 }
 
 static duk_ret_t native_print(duk_context* ctx) {
