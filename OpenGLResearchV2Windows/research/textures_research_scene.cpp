@@ -16,26 +16,29 @@ static const char* g_vertexShaderSource = R"(
 #version 400 core
 
 layout(location = 0) in vec3 positionAttribute;
-layout(location = 1) in vec3 colorAttribute;
+layout(location = 1) in vec2 uvAttribute;
 
 uniform mat4 mvpMatrixUniform;
 
-out vec3 interpolatedVertexColor;
+out vec2 interpolatedUV;
 
 void main() {
     gl_Position = mvpMatrixUniform * vec4(positionAttribute, 1);
-    interpolatedVertexColor = colorAttribute;
+    interpolatedUV = uvAttribute;
 }
 )";
 
 static const char* g_fragmentShaderSource = R"(
 #version 400 core
 
-in vec3 interpolatedVertexColor;
+uniform sampler2D sampler0;
+
+in vec2 interpolatedUV;
+
 out vec4 outColor;
 
 void main() {
-    outColor = vec4(interpolatedVertexColor, 1);
+    outColor = texture(sampler0, interpolatedUV);
 }
 )";
 
@@ -47,7 +50,10 @@ void TexturesResearchScene::renderUi()
 
     ImGui::Begin("Scene");
     ImGui::Text("FPS: %.02f", m_fpsCalculator.fps());
-    ImGui::SliderFloat("Model z-angle", &m_zAngle, 0, 360);
+    ImGui::Text("Model");
+    ImGui::SliderFloat("x-angle", &m_xAngle, 0, 360);
+    ImGui::SliderFloat("y-angle", &m_yAngle, 0, 360);
+    ImGui::SliderFloat("z-angle", &m_zAngle, 0, 360);
     ImGui::Text("Camera");
     ImGui::SliderFloat("x", &m_cameraPosition.x, -10, 10);
     ImGui::SliderFloat("y", &m_cameraPosition.y, -10, 10);
@@ -66,6 +72,8 @@ void TexturesResearchScene::renderUi()
 void TexturesResearchScene::start()
 {
     m_cameraPosition = { 0, 0, 5 };
+    m_xAngle = 0;
+    m_yAngle = 0;
     m_zAngle = 0;
 
     GLuint vao;
@@ -112,6 +120,17 @@ void TexturesResearchScene::start()
     );
     glEnableVertexAttribArray(1);
 
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
+    glActiveTexture(GL_TEXTURE0);
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_RECTANGLE, texture);
+    auto image = m_bitmapDataSource->loadBitmap("bitmaps/wood512x512.png");
+    glTexStorage2D(GL_TEXTURE_RECTANGLE, 1, GL_RGBA8, image.width, image.height);
+    glTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, image.width, image.height, GL_RGBA, GL_UNSIGNED_BYTE, image.data.data());
+
     m_openGLErrorDetector->checkOpenGLErrors("TexturesResearchScene::start");
 
     glm::vec4 viewport = glGetIntegerv4(GL_VIEWPORT);
@@ -126,11 +145,10 @@ void TexturesResearchScene::update(float dt)
     glUseProgram(shaderProgramContainer.shaderProgram());
 
     auto modelMatrix = glm::identity<glm::mat4>();
-    auto rotation = glm::rotate(
-        glm::identity<glm::quat>(),
-        glm::radians(m_zAngle),
-        glm::vec3(0, 0, 1)
-    );
+
+    auto rotation = glm::rotate(glm::identity<glm::quat>(), glm::radians(m_zAngle), glm::vec3(0, 0, 1));
+    rotation = glm::rotate(rotation, glm::radians(m_xAngle), glm::vec3(1, 0, 0));
+    rotation = glm::rotate(rotation, glm::radians(m_yAngle), glm::vec3(0, 1, 0));
     modelMatrix *= glm::toMat4(rotation);
     auto viewMatrix = glm::lookAt(m_cameraPosition, m_cameraPosition + m_forward, m_up);
 
@@ -138,7 +156,7 @@ void TexturesResearchScene::update(float dt)
     auto mvpMatrixUniform = shaderProgramContainer.mvpMatrixUniform();
     glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, &mvpMatrix[0][0]);
 
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glDrawElements(GL_TRIANGLES, m_boxMesh.indices().size(), GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
 

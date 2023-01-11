@@ -44,6 +44,10 @@ BitmapInfo WindowsBitmapLoader::loadBitmap(const string& path)
         throw domain_error(ss.str());
     }
 
+    bitmapInfo.width = bitmap->GetWidth();
+    bitmapInfo.height = bitmap->GetHeight();
+
     delete bitmap;
+
     return bitmapInfo;
 }
