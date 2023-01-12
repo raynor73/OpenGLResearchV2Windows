@@ -6,6 +6,9 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <rendering_engine/utils.h>
+#include <exception>
+#include <stdexcept>
+#include <sstream>
 
 using namespace GameEngine;
 using namespace std;
@@ -42,22 +45,65 @@ void main() {
 }
 )";
 
+static const char* g_magFilterOptions[] = { 
+    "GL_NEAREST",
+    "GL_LINEAR"
+};
+static int g_magFilterSelectedOptionIndex = 0;
+
+static const char* g_minFilterOptions[] = { 
+    "GL_NEAREST",
+    "GL_LINEAR",
+    "GL_NEAREST_MIPMAP_NEAREST",
+    "GL_NEAREST_MIPMAP_LINEAR",
+    "GL_LINEAR_MIPMAP_NEAREST",
+    "GL_LINEAR_MIPMAP_LINEAR"
+};
+static int g_minFilterSelectedOptionIndex = 0;
+
 void TexturesResearchScene::renderUi()
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
+    //ImGui::ShowDemoWindow();
+
     ImGui::Begin("Scene");
+    
     ImGui::Text("FPS: %.02f", m_fpsCalculator.fps());
+    
     ImGui::Text("Model");
     ImGui::SliderFloat("x-angle", &m_xAngle, 0, 360);
     ImGui::SliderFloat("y-angle", &m_yAngle, 0, 360);
     ImGui::SliderFloat("z-angle", &m_zAngle, 0, 360);
+    ImGui::SliderFloat("x-scale", &m_modelScale.x, 1, 20);
+    ImGui::SliderFloat("y-scale", &m_modelScale.y, 1, 20);
+    ImGui::SliderFloat("z-scale", &m_modelScale.z, 1, 20);
+    
     ImGui::Text("Camera");
     ImGui::SliderFloat("x", &m_cameraPosition.x, -10, 10);
     ImGui::SliderFloat("y", &m_cameraPosition.y, -10, 10);
-    ImGui::SliderFloat("z", &m_cameraPosition.z, -10, 10);
+    ImGui::SliderFloat("z", &m_cameraPosition.z, 0.1, 100);
+    
+    if (ImGui::BeginCombo("GL_TEXTURE_MAG_FILTER", g_magFilterOptions[g_magFilterSelectedOptionIndex], 0)) {
+        for (int i = 0; i < IM_ARRAYSIZE(g_magFilterOptions); i++) {
+            if (ImGui::Selectable(g_magFilterOptions[i], g_magFilterSelectedOptionIndex == i)) {
+                g_magFilterSelectedOptionIndex = i;
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    if (ImGui::BeginCombo("GL_TEXTURE_MIN_FILTER", g_minFilterOptions[g_minFilterSelectedOptionIndex], 0)) {
+        for (int i = 0; i < IM_ARRAYSIZE(g_minFilterOptions); i++) {
+            if (ImGui::Selectable(g_minFilterOptions[i], g_minFilterSelectedOptionIndex == i)) {
+                g_minFilterSelectedOptionIndex = i;
+            }
+        }
+        ImGui::EndCombo();
+    }
+
     ImGui::End();
 
     ImGui::Render();
@@ -75,6 +121,7 @@ void TexturesResearchScene::start()
     m_xAngle = 0;
     m_yAngle = 0;
     m_zAngle = 0;
+    m_modelScale = { 1, 1, 1 };
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
@@ -126,10 +173,45 @@ void TexturesResearchScene::start()
     glActiveTexture(GL_TEXTURE0);
     GLuint texture;
     glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_RECTANGLE, texture);
-    auto image = m_bitmapDataSource->loadBitmap("bitmaps/wood512x512.png");
-    glTexStorage2D(GL_TEXTURE_RECTANGLE, 1, GL_RGBA8, image.width, image.height);
-    glTexSubImage2D(GL_TEXTURE_RECTANGLE, 0, 0, 0, image.width, image.height, GL_RGBA, GL_UNSIGNED_BYTE, image.data.data());
+    glBindTexture(GL_TEXTURE_2D, texture);
+    auto redSquaresBitmap = m_bitmapDataSource->loadBitmap("bitmaps/red_test_128x128.png");
+    auto greenSquaresBitmap = m_bitmapDataSource->loadBitmap("bitmaps/green_test_256x256.png");
+    auto blueSquaresBitmap = m_bitmapDataSource->loadBitmap("bitmaps/blue_test_512x512.png");
+    glTexStorage2D(GL_TEXTURE_2D, 3, GL_RGBA8, blueSquaresBitmap.width, blueSquaresBitmap.height);
+    
+    glTexSubImage2D(
+        GL_TEXTURE_2D,
+        0,
+        0,
+        0,
+        blueSquaresBitmap.width,
+        blueSquaresBitmap.height,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        blueSquaresBitmap.data.data()
+    );
+    glTexSubImage2D(
+        GL_TEXTURE_2D,
+        1,
+        0,
+        0,
+        greenSquaresBitmap.width,
+        greenSquaresBitmap.height,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        greenSquaresBitmap.data.data()
+    );
+    glTexSubImage2D(
+        GL_TEXTURE_2D,
+        2,
+        0,
+        0,
+        redSquaresBitmap.width,
+        redSquaresBitmap.height,
+        GL_RGBA,
+        GL_UNSIGNED_BYTE,
+        redSquaresBitmap.data.data()
+    );
 
     m_openGLErrorDetector->checkOpenGLErrors("TexturesResearchScene::start");
 
@@ -149,7 +231,10 @@ void TexturesResearchScene::update(float dt)
     auto rotation = glm::rotate(glm::identity<glm::quat>(), glm::radians(m_zAngle), glm::vec3(0, 0, 1));
     rotation = glm::rotate(rotation, glm::radians(m_xAngle), glm::vec3(1, 0, 0));
     rotation = glm::rotate(rotation, glm::radians(m_yAngle), glm::vec3(0, 1, 0));
+
     modelMatrix *= glm::toMat4(rotation);
+    modelMatrix = glm::scale(modelMatrix, m_modelScale);
+
     auto viewMatrix = glm::lookAt(m_cameraPosition, m_cameraPosition + m_forward, m_up);
 
     auto mvpMatrix = m_projection * viewMatrix * modelMatrix;
@@ -157,6 +242,61 @@ void TexturesResearchScene::update(float dt)
     glUniformMatrix4fv(mvpMatrixUniform, 1, GL_FALSE, &mvpMatrix[0][0]);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glActiveTexture(GL_TEXTURE0);
+
+    GLenum magFilter;
+    switch (g_magFilterSelectedOptionIndex) {
+    case 0:
+        magFilter = GL_NEAREST;
+        break;
+
+    case 1:
+        magFilter = GL_LINEAR;
+        break;
+
+    default: {
+        stringstream ss;
+        ss << "Unexpected g_magFilterSelectedOptionIndex: " << g_magFilterSelectedOptionIndex;
+        throw runtime_error(ss.str());
+    }
+    }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter);
+
+    GLenum minFilter;
+    switch (g_minFilterSelectedOptionIndex)
+    {
+    case 0:
+        minFilter = GL_NEAREST;
+        break;
+
+    case 1:
+        minFilter = GL_LINEAR;
+        break;
+
+    case 2:
+        minFilter = GL_NEAREST_MIPMAP_NEAREST;
+        break;
+
+    case 3:
+        minFilter = GL_NEAREST_MIPMAP_LINEAR;
+        break;
+
+    case 4:
+        minFilter = GL_LINEAR_MIPMAP_NEAREST;
+        break;
+
+    case 5:
+        minFilter = GL_LINEAR_MIPMAP_LINEAR;
+        break;
+
+    default: {
+        stringstream ss;
+        ss << "Unexpected g_minFilterSelectedOptionIndex: " << g_minFilterSelectedOptionIndex;
+        throw runtime_error(ss.str());
+    }
+    }
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
 
     glDrawElements(GL_TRIANGLES, m_boxMesh.indices().size(), GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
 

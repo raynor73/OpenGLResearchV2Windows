@@ -26,6 +26,7 @@ class TexturesResearchScene : public SceneWithTime
     FpsCalculator m_fpsCalculator;
 
     float m_xAngle, m_yAngle, m_zAngle;
+    glm::vec3 m_modelScale;
 
     GameEngine::Mesh m_boxMesh;
 

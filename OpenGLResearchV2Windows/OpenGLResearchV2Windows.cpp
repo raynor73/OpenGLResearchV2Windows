@@ -379,6 +379,7 @@ static void printOpenGLInfo() {
     logGLInteger("OpenGL", "GL_MAX_RENDERBUFFER_SIZE", GL_MAX_RENDERBUFFER_SIZE);
     logGLInteger("OpenGL", "GL_MAX_COLOR_ATTACHMENTS", GL_MAX_COLOR_ATTACHMENTS);
     logGLInteger("OpenGL", "GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS", GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS);
+    logGLInteger("OpenGL", "GL_MAX_3D_TEXTURE_SIZE", GL_MAX_3D_TEXTURE_SIZE);
 }
 
 static void mainLoop(GLFWwindow* window) {

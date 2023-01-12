@@ -35,8 +35,19 @@ BitmapInfo WindowsBitmapLoader::loadBitmap(const string& path)
         }
         break;
 
-    /*case PixelFormat32bppARGB:
-        break;*/
+    case PixelFormat32bppARGB:
+        for (uint32_t y = 0; y < bitmap->GetHeight(); y++) {
+            for (uint32_t x = 0; x < bitmap->GetWidth(); x++) {
+                Color color;
+                bitmap->GetPixel(x, y, &color);
+
+                bitmapInfo.data.push_back(color.GetR());
+                bitmapInfo.data.push_back(color.GetG());
+                bitmapInfo.data.push_back(color.GetB());
+                bitmapInfo.data.push_back(color.GetA());
+            }
+        }
+        break;
 
     default:
         stringstream ss;
