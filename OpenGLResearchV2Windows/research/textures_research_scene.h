@@ -27,6 +27,7 @@ class TexturesResearchScene : public SceneWithTime
 
     float m_xAngle, m_yAngle, m_zAngle;
     glm::vec3 m_modelScale;
+    glm::vec2 m_textureScale;
     float m_mipmapBias;
 
     GameEngine::Mesh m_boxMesh;

@@ -9,6 +9,7 @@
 #include <exception>
 #include <stdexcept>
 #include <sstream>
+#include <unordered_map>
 
 using namespace GameEngine;
 using namespace std;
@@ -36,13 +37,14 @@ static const char* g_fragmentShaderSource = R"(
 
 uniform sampler2D sampler0;
 uniform float bias;
+uniform vec2 textureScale;
 
 in vec2 interpolatedUV;
 
 out vec4 outColor;
 
 void main() {
-    outColor = texture(sampler0, interpolatedUV, bias);
+    outColor = texture(sampler0, interpolatedUV * textureScale, bias);
 }
 )";
 
@@ -61,6 +63,21 @@ static const char* g_minFilterOptions[] = {
     "GL_LINEAR_MIPMAP_LINEAR"
 };
 static int g_minFilterSelectedOptionIndex = 0;
+
+static const char* g_textureClampingModes[] = {
+    "GL_CLAMP_TO_EDGE",
+    "GL_CLAMP_TO_BORDER",
+    "GL_REPEAT",
+    "GL_MIRRORED_REPEAT"
+};
+static int g_selectedTextureClampingModeS = 2;
+static int g_selectedTextureClampingModeT = 2;
+static unordered_map<int, GLenum> g_clampingModeIndex2GLenumMap = { 
+    {0, GL_CLAMP_TO_EDGE},
+    {1, GL_CLAMP_TO_BORDER},
+    {2, GL_REPEAT},
+    {3, GL_MIRRORED_REPEAT}
+};
 
 void TexturesResearchScene::renderUi()
 {
@@ -82,12 +99,17 @@ void TexturesResearchScene::renderUi()
     ImGui::SliderFloat("y-scale", &m_modelScale.y, 1, 20);
     ImGui::SliderFloat("z-scale", &m_modelScale.z, 1, 20);
     ImGui::SliderFloat("mimmap bias", &m_mipmapBias, -2, 2);
-    
+
     ImGui::Text("Camera");
     ImGui::SliderFloat("x", &m_cameraPosition.x, -10, 10);
     ImGui::SliderFloat("y", &m_cameraPosition.y, -10, 10);
     ImGui::SliderFloat("z", &m_cameraPosition.z, 0.1, 100);
     
+    ImGui::Text("Texture");
+
+    ImGui::SliderFloat("u-scale", &m_textureScale.x, 0.5, 4);
+    ImGui::SliderFloat("v-scale", &m_textureScale.y, 0.5, 4);
+
     if (ImGui::BeginCombo("GL_TEXTURE_MAG_FILTER", g_magFilterOptions[g_magFilterSelectedOptionIndex], 0)) {
         for (int i = 0; i < IM_ARRAYSIZE(g_magFilterOptions); i++) {
             if (ImGui::Selectable(g_magFilterOptions[i], g_magFilterSelectedOptionIndex == i)) {
@@ -101,6 +123,24 @@ void TexturesResearchScene::renderUi()
         for (int i = 0; i < IM_ARRAYSIZE(g_minFilterOptions); i++) {
             if (ImGui::Selectable(g_minFilterOptions[i], g_minFilterSelectedOptionIndex == i)) {
                 g_minFilterSelectedOptionIndex = i;
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    if (ImGui::BeginCombo("GL_TEXTURE_WRAP_S", g_textureClampingModes[g_selectedTextureClampingModeS], 0)) {
+        for (int i = 0; i < IM_ARRAYSIZE(g_textureClampingModes); i++) {
+            if (ImGui::Selectable(g_textureClampingModes[i], g_selectedTextureClampingModeS == i)) {
+                g_selectedTextureClampingModeS = i;
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    if (ImGui::BeginCombo("GL_TEXTURE_WRAP_T", g_textureClampingModes[g_selectedTextureClampingModeT], 0)) {
+        for (int i = 0; i < IM_ARRAYSIZE(g_textureClampingModes); i++) {
+            if (ImGui::Selectable(g_textureClampingModes[i], g_selectedTextureClampingModeT == i)) {
+                g_selectedTextureClampingModeT = i;
             }
         }
         ImGui::EndCombo();
@@ -124,6 +164,7 @@ void TexturesResearchScene::start()
     m_yAngle = 0;
     m_zAngle = 0;
     m_modelScale = { 1, 1, 1 };
+    m_textureScale = { 1, 1 };
     m_mipmapBias = 0;
 
     GLuint vao;
@@ -230,6 +271,7 @@ void TexturesResearchScene::update(float dt)
     glUseProgram(shaderProgramContainer.shaderProgram());
 
     auto biasUniform = glGetUniformLocation(shaderProgramContainer.shaderProgram(), "bias");
+    auto textureScaleUniform = glGetUniformLocation(shaderProgramContainer.shaderProgram(), "textureScale");
 
     auto modelMatrix = glm::identity<glm::mat4>();
 
@@ -303,7 +345,11 @@ void TexturesResearchScene::update(float dt)
     }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
 
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, g_clampingModeIndex2GLenumMap[g_selectedTextureClampingModeS]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, g_clampingModeIndex2GLenumMap[g_selectedTextureClampingModeT]);
+
     glUniform1f(biasUniform, m_mipmapBias);
+    glUniform2f(textureScaleUniform, m_textureScale.x, m_textureScale.y);
 
     glDrawElements(GL_TRIANGLES, m_boxMesh.indices().size(), GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
 
