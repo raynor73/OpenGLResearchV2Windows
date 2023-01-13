@@ -146,6 +146,8 @@ void TexturesResearchScene::renderUi()
         ImGui::EndCombo();
     }
 
+    ImGui::ColorPicker3("Border color", &m_textureBorderColor.r);
+
     ImGui::End();
 
     ImGui::Render();
@@ -165,6 +167,7 @@ void TexturesResearchScene::start()
     m_zAngle = 0;
     m_modelScale = { 1, 1, 1 };
     m_textureScale = { 1, 1 };
+    m_textureBorderColor = { 0, 0, 0, 1 };
     m_mipmapBias = 0;
 
     GLuint vao;
@@ -347,6 +350,7 @@ void TexturesResearchScene::update(float dt)
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, g_clampingModeIndex2GLenumMap[g_selectedTextureClampingModeS]);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, g_clampingModeIndex2GLenumMap[g_selectedTextureClampingModeT]);
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &m_textureBorderColor.r);
 
     glUniform1f(biasUniform, m_mipmapBias);
     glUniform2f(textureScaleUniform, m_textureScale.x, m_textureScale.y);
