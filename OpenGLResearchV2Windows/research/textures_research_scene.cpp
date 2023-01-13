@@ -35,13 +35,14 @@ static const char* g_fragmentShaderSource = R"(
 #version 400 core
 
 uniform sampler2D sampler0;
+uniform float bias;
 
 in vec2 interpolatedUV;
 
 out vec4 outColor;
 
 void main() {
-    outColor = texture(sampler0, interpolatedUV);
+    outColor = texture(sampler0, interpolatedUV, bias);
 }
 )";
 
@@ -80,6 +81,7 @@ void TexturesResearchScene::renderUi()
     ImGui::SliderFloat("x-scale", &m_modelScale.x, 1, 20);
     ImGui::SliderFloat("y-scale", &m_modelScale.y, 1, 20);
     ImGui::SliderFloat("z-scale", &m_modelScale.z, 1, 20);
+    ImGui::SliderFloat("mimmap bias", &m_mipmapBias, -2, 2);
     
     ImGui::Text("Camera");
     ImGui::SliderFloat("x", &m_cameraPosition.x, -10, 10);
@@ -122,6 +124,7 @@ void TexturesResearchScene::start()
     m_yAngle = 0;
     m_zAngle = 0;
     m_modelScale = { 1, 1, 1 };
+    m_mipmapBias = 0;
 
     GLuint vao;
     glGenVertexArrays(1, &vao);
@@ -226,6 +229,8 @@ void TexturesResearchScene::update(float dt)
     auto shaderProgramContainer = m_shadersRepository->getShaderProgramContainer("shaderProgram");
     glUseProgram(shaderProgramContainer.shaderProgram());
 
+    auto biasUniform = glGetUniformLocation(shaderProgramContainer.shaderProgram(), "bias");
+
     auto modelMatrix = glm::identity<glm::mat4>();
 
     auto rotation = glm::rotate(glm::identity<glm::quat>(), glm::radians(m_zAngle), glm::vec3(0, 0, 1));
@@ -297,6 +302,8 @@ void TexturesResearchScene::update(float dt)
     }
     }
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter);
+
+    glUniform1f(biasUniform, m_mipmapBias);
 
     glDrawElements(GL_TRIANGLES, m_boxMesh.indices().size(), GL_UNSIGNED_SHORT, BUFFER_OFFSET(0));
 
